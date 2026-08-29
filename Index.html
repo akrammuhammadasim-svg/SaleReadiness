@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sale Readiness — Live Prototype v2</title>
+<style>
+:root{
+  --bg:#f4f6fa; --panel:#ffffff; --ink:#1c2430; --muted:#697386; --line:#e4e8ef;
+  --brand:#5b3fa8; --brand2:#7c5cd6;
+  --green:#16a34a; --greenbg:#dcfce7; --amber:#d97706; --amberbg:#fef3c7;
+  --red:#dc2626; --redbg:#fee2e2; --grey:#94a3b8; --greybg:#eef1f6;
+  --shadow:0 1px 3px rgba(20,30,50,.08),0 1px 2px rgba(20,30,50,.04);
+}
+:root[data-theme="dark"]{
+  --bg:#0f1420; --panel:#171e2b; --ink:#e7ecf3; --muted:#95a1b4; --line:#28323f;
+  --brand:#a78bfa; --brand2:#8b6ff0;
+  --green:#34d399; --greenbg:#0c3326; --amber:#fbbf24; --amberbg:#3a2c07;
+  --red:#f87171; --redbg:#3a1414; --grey:#64748b; --greybg:#1e2836;
+  --shadow:0 1px 3px rgba(0,0,0,.4);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1420; --panel:#171e2b; --ink:#e7ecf3; --muted:#95a1b4; --line:#28323f;
+  --brand:#a78bfa; --brand2:#8b6ff0;
+  --green:#34d399; --greenbg:#0c3326; --amber:#fbbf24; --amberbg:#3a2c07;
+  --red:#f87171; --redbg:#3a1414; --grey:#64748b; --greybg:#1e2836; --shadow:0 1px 3px rgba(0,0,0,.4);
+}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:14px;line-height:1.45}
+header{background:#1b1f27;color:#fff;padding:14px 22px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;box-shadow:var(--shadow);position:sticky;top:0;z-index:50}
+header h1{font-size:16px;margin:0;font-weight:700;white-space:nowrap}
+header .sub{font-size:11.5px;opacity:.85;margin-top:1px}
+.nav{margin-left:auto;display:flex;gap:6px;background:rgba(255,255,255,.14);padding:4px;border-radius:10px}
+.nav button{background:transparent;border:0;color:#fff;padding:7px 15px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;opacity:.85}
+.nav button.active{background:#fff;color:var(--brand);opacity:1}
+.demo-pill{font-size:10.5px;background:rgba(255,255,255,.2);padding:3px 9px;border-radius:20px;font-weight:600}
+main{max-width:1180px;margin:0 auto;padding:22px}
+.view{display:none}.view.active{display:block}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+.muted{color:var(--muted)}
+h2.section{font-size:15px;margin:0 0 3px}
+.flowbox{background:var(--greybg);border:1px dashed var(--line);border-radius:10px;padding:12px 16px;font-size:12px;color:var(--muted);margin-bottom:18px;line-height:1.7}
+.flowbox b{color:var(--ink)}
+
+/* dashboard */
+.lensbar{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.lenslbl{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);font-weight:700}
+.lensbar select,select,input[type=text],input[type=password]{padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:var(--panel);color:var(--ink);font-size:13px;min-width:210px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:18px}
+.kpi{padding:15px 17px}
+.kpi .lbl{font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:700}
+.kpi .val{font-size:27px;font-weight:800;margin-top:4px;line-height:1}
+.kpi .foot{font-size:11px;color:var(--muted);margin-top:5px}
+.grid2{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;align-items:start}
+@media(max-width:860px){.grid2{grid-template-columns:1fr}}
+.panel-h{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+.panel-h h3{margin:0;font-size:14px}
+.panel-b{padding:14px 18px}
+.catbar{margin:11px 0}
+.catbar .top{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px}
+.track{height:9px;background:var(--greybg);border-radius:6px;overflow:hidden}
+.fill{height:100%;border-radius:6px;transition:width .5s ease}
+.pct{font-variant-numeric:tabular-nums;font-weight:700}
+.region-chips{display:flex;gap:10px;flex-wrap:wrap}
+.rchip{flex:1;min-width:120px;padding:12px 14px;border-radius:10px;border:1px solid var(--line)}
+.rchip .rn{font-size:12px;color:var(--muted);font-weight:700}
+.rchip .rv{font-size:22px;font-weight:800;margin-top:2px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line)}
+th{font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);cursor:pointer;position:sticky;top:0;background:var(--panel)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700}
+.b-green{background:var(--greenbg);color:var(--green)}.b-amber{background:var(--amberbg);color:var(--amber)}.b-red{background:var(--redbg);color:var(--red)}
+.minibar{display:inline-block;width:56px;height:7px;border-radius:4px;background:var(--greybg);vertical-align:middle;overflow:hidden;margin-right:7px}
+.minibar i{display:block;height:100%}
+.tablewrap{max-height:480px;overflow:auto}
+.search{padding:7px 11px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font-size:12.5px;width:170px;min-width:auto}
+.strow{cursor:pointer}.strow:hover{background:var(--greybg)}
+.exp{display:inline-block;width:12px;color:var(--muted);font-size:10px}
+.op-link{color:var(--brand2);font-weight:600;cursor:pointer;font-size:11.5px;text-decoration:underline}
+.drillbox{background:var(--greybg);border-radius:8px;padding:12px 14px;margin:2px 0}
+.drillhead{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:700;margin-bottom:8px}
+.dcats{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.dcat .dch{font-size:12px;font-weight:700;margin-bottom:5px}
+.ditem{display:flex;align-items:flex-start;gap:7px;font-size:12px;padding:2px 0}
+.dstat{margin-left:auto;font-size:10.5px;color:var(--muted);white-space:nowrap}
+.dot{width:9px;height:9px;border-radius:50%;flex:none;margin-top:4px}
+
+/* entry */
+.entry-top{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px}
+.field label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:700;margin-bottom:5px}
+.store-meter{margin-left:auto;text-align:right}
+.store-meter .big{font-size:34px;font-weight:800;line-height:1}
+.store-meter .cap{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-weight:700}
+.entry-toolbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:4px 0 14px;padding:10px 14px;background:var(--greybg);border-radius:10px;border:1px solid transparent}
+.entry-toolbar.filtering{background:var(--amberbg);border-color:var(--amber)}
+.filterbanner{background:var(--amberbg);border:1px solid var(--amber);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:12.5px;color:var(--ink);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.filterbanner button,.filterclear button{margin-left:auto;background:var(--brand);color:#fff;border:0;border-radius:7px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer}
+.filterclear{background:var(--greenbg);color:var(--green);border:1px solid var(--green);border-radius:10px;padding:12px 14px;margin-top:10px;font-weight:600;font-size:13px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.flagbanner{background:var(--redbg);border:1px solid var(--red);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:12.5px;color:var(--ink)}
+.qrow.hasflag{background:rgba(220,38,38,.05)}
+.storeflag{margin-top:8px;padding:8px 10px;border-left:3px solid var(--red);background:var(--redbg);border-radius:0 8px 8px 0}
+.sfhdr{font-size:11px;font-weight:700;color:var(--red)}
+.sfnote{font-size:12.5px;color:var(--ink);margin-top:2px}
+.sfhint{font-size:11px;color:var(--muted)}
+.sfrow{display:flex;align-items:center;gap:10px;margin-top:6px;flex-wrap:wrap}
+.sfrow .sfhint{flex:1;min-width:140px}
+.linkbtn{background:none;border:0;color:var(--brand2);font-size:11.5px;font-weight:600;cursor:pointer;padding:0;text-decoration:underline}
+.flagbox{display:flex;gap:6px;margin-top:5px;align-items:center}
+.flagbox input{flex:1;padding:6px 9px;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--ink);font-size:12px;min-width:auto}
+.flagged{margin-top:4px;font-size:12px;color:var(--red);background:var(--redbg);padding:5px 8px;border-radius:7px}
+.flagged i{font-style:normal}
+.dmgwrap{flex-basis:100%;margin-top:6px}
+.dmgscroll{overflow-x:auto}
+.dmgtbl{width:100%;border-collapse:collapse;font-size:12px;min-width:620px;table-layout:fixed}
+.dmgtbl th{font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);font-weight:700;text-align:left;padding:4px 6px;position:static;background:transparent}
+.dmgtbl td{padding:4px 6px;border-top:1px solid var(--line);vertical-align:middle}
+.dmgtbl input,.dmgtbl select{padding:5px 7px;font-size:12px;min-width:0;width:100%;box-sizing:border-box}
+.dmgtbl .dval{text-align:right;font-weight:600;color:var(--red);white-space:nowrap}
+.dmgfoot{display:flex;align-items:center;gap:12px;margin-top:8px;flex-wrap:wrap;font-size:12px}
+.toggle{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;cursor:pointer}
+.toggle input{width:34px;height:18px;appearance:none;background:var(--line);border-radius:20px;position:relative;cursor:pointer;transition:.2s;flex:none}
+.toggle input:checked{background:var(--brand)}
+.toggle input::after{content:"";position:absolute;width:14px;height:14px;background:#fff;border-radius:50%;top:2px;left:2px;transition:.2s}
+.toggle input:checked::after{left:18px}
+.jumpbtn{margin-left:auto;font-size:12px;font-weight:600;color:var(--brand2);background:none;border:0;cursor:pointer;text-decoration:underline}
+.acc{margin-bottom:10px;overflow:hidden}
+.acc-h{padding:12px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;background:var(--panel);flex-wrap:wrap}
+.acc-h .ct{font-weight:700;font-size:13.5px;flex:1}
+.acc-h .cnt{font-size:11px;color:var(--muted);font-weight:600}
+.acc-h .cbar{width:44px;height:6px;border-radius:4px;background:var(--greybg);overflow:hidden;flex:none}
+.acc-h .cbar i{display:block;height:100%}
+.acc-h .cp{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;width:40px;text-align:right}
+.acc-h .chev{color:var(--muted);transition:transform .2s}
+.acc.open .chev{transform:rotate(90deg)}
+.acc.done .acc-h{background:linear-gradient(90deg,var(--greenbg),var(--panel))}
+.acc-b{display:none;border-top:1px solid var(--line)}
+.acc.open .acc-b{display:block}
+.qrow{padding:11px 16px;border-bottom:1px solid var(--line)}
+.qrow:last-child{border-bottom:0}
+.qtop{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.qdot{width:9px;height:9px;border-radius:50%;flex:none}
+.qname{flex:1;font-size:13px;min-width:150px}
+.qhelp{font-size:11px;color:var(--muted);font-style:italic;margin-top:2px;flex-basis:100%;padding-left:19px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex:none;flex-wrap:wrap}
+.seg button{border:0;background:var(--panel);color:var(--muted);font-size:11px;font-weight:600;padding:6px 9px;cursor:pointer;border-left:1px solid var(--line)}
+.seg button:first-child{border-left:0}
+.seg button.on-done{background:var(--green);color:#fff}
+.seg button.on-mid{background:var(--amber);color:#fff}
+.seg button.on-bad{background:var(--red);color:#fff}
+.seg button.on-na{background:var(--grey);color:#fff}
+.numin{width:110px;padding:6px 9px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font-size:12.5px}
+.numlab{font-size:11px;color:var(--muted);margin-right:3px}
+.timein{padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font-size:12.5px}
+.remark{flex-basis:100%;margin-top:8px;padding-left:19px;display:flex;align-items:center;gap:8px}
+.remark input{flex:1;padding:7px 10px;border:1px solid var(--amber);border-radius:8px;background:var(--amberbg);color:var(--ink);font-size:12.5px;min-width:auto}
+.remark .rlbl{font-size:11px;font-weight:700;color:var(--amber);white-space:nowrap}
+.actions{display:flex;gap:10px;align-items:center;margin-top:16px}
+.btn{padding:10px 20px;border-radius:9px;border:0;font-size:13.5px;font-weight:700;cursor:pointer}
+.btn-primary{background:var(--brand);color:#fff}
+.btn-ghost{background:var(--greybg);color:var(--ink)}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--green);color:#fff;padding:14px 26px;border-radius:12px;font-weight:700;font-size:14.5px;box-shadow:0 6px 24px rgba(20,30,50,.25);transition:transform .35s;z-index:99;max-width:92vw;text-align:center}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* review */
+.gatecard{max-width:520px;margin:40px auto;padding:28px 26px}
+.gatelock{font-size:32px;margin-bottom:8px}
+.revcard{margin-bottom:14px;overflow:hidden}
+.revhead{padding:14px 18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+.revhead .rn{font-weight:700;font-size:15px;flex:1}
+.revhead .rp{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+.revstatus{font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:20px}
+.rs-await{background:var(--amberbg);color:var(--amber)}.rs-done{background:var(--greenbg);color:var(--green)}.rs-stale{background:var(--redbg);color:var(--red)}
+.revbody{padding:6px 18px 14px}
+.revcat{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--line)}
+.revcat:last-child{border-bottom:0}
+.revcat .cn{flex:1;font-size:13px}
+.revcat .cpc{font-size:12px;font-weight:700;width:44px;text-align:right}
+.revcat .cst{font-size:11px;color:var(--muted);width:96px;text-align:right}
+.tick{width:20px;height:20px;border:2px solid var(--line);border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;flex:none;background:var(--panel)}
+.tick.on{background:var(--green);border-color:var(--green)}
+.revfoot{padding:12px 18px;border-top:1px solid var(--line);display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--greybg)}
+.revfoot .prog{font-size:12px;color:var(--muted);font-weight:600}
+.revnote{flex:1;min-width:160px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font-size:12.5px}
+.signed{font-size:12px;color:var(--green);font-weight:600}
+.revpend{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
+.revfresh{margin-top:10px;padding:8px 12px;border-radius:8px;font-size:12.5px;font-weight:600}
+.revfresh.ok{background:var(--greenbg);color:var(--green)}
+.revfresh.warn{background:var(--redbg)}
+.revtoggle{background:none;border:0;color:var(--brand2);font-weight:700;font-size:12.5px;cursor:pointer;padding:0}
+#storepass{min-width:170px}
+
+/* one-pager modal */
+.overlay{position:fixed;inset:0;background:rgba(10,15,25,.55);display:none;align-items:flex-start;justify-content:center;z-index:200;padding:30px 16px;overflow:auto}
+.overlay.show{display:flex}
+.opsheet{background:var(--panel);color:var(--ink);border-radius:14px;max-width:820px;width:100%;box-shadow:var(--shadow);border:1px solid var(--line)}
+.ophead{padding:18px 22px;border-bottom:2px solid var(--brand);display:flex;align-items:flex-start;gap:16px}
+.ophead .t{flex:1}.ophead h2{margin:0;font-size:19px}.ophead .meta{font-size:12px;color:var(--muted);margin-top:3px}.ophead .big{font-size:40px;font-weight:800;line-height:1}
+.opbody{padding:18px 22px}
+.opgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px 26px}
+@media(max-width:640px){.opgrid{grid-template-columns:1fr}}
+.opcat{border-bottom:1px solid var(--line);padding:7px 0;display:flex;align-items:center;gap:10px}
+.opcat .cn{flex:1;font-size:12.5px}.opcat .cpct{font-weight:700;font-size:12.5px}
+.opclose{background:var(--greybg);border:0;border-radius:8px;width:32px;height:32px;font-size:16px;cursor:pointer;color:var(--ink)}
+.opfoot{padding:14px 22px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end}
+.oppend{margin-top:16px}.oppend h4{margin:0 0 8px;font-size:13px}
+.opdetail{margin-top:18px}.opdetail h4{margin:0 0 10px;font-size:13px}
+.opsec{margin-bottom:14px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.opsech{display:flex;justify-content:space-between;align-items:center;background:var(--greybg);padding:8px 12px;font-weight:700;font-size:12.5px}
+.opq{padding:7px 12px;border-top:1px solid var(--line)}
+.opqtop{display:flex;align-items:center;gap:9px}
+.opqn{flex:1;font-size:12.5px}
+.opqa{font-weight:700;font-size:12.5px;text-align:right;white-space:nowrap}
+.opedit{font-size:10.5px;color:var(--muted);white-space:nowrap;min-width:52px;text-align:right}
+.opedit.stale{color:var(--red);font-weight:700}
+.opremark{font-size:11px;color:var(--muted);padding-left:18px;margin-top:2px}
+@media print{body *{visibility:hidden}.overlay,.overlay *{visibility:visible}.overlay{position:absolute;background:#fff;padding:0}.opfoot,.opclose{display:none}}
+/* ---- mobile ---- */
+@media(max-width:640px){
+  header{padding:11px 13px;gap:8px}
+  header h1{font-size:14px}
+  header .sub{display:none}
+  .nav{margin-left:0;width:100%;overflow-x:auto;justify-content:flex-start;gap:4px}
+  .nav button{white-space:nowrap;padding:7px 11px;font-size:12.5px}
+  .demo-pill{order:5}
+  main{padding:14px 12px}
+  .kpi{padding:13px 14px}.kpi .val{font-size:22px}
+  .entry-top{gap:12px}
+  .store-meter{margin-left:0;text-align:left}
+  .lensbar{gap:8px}
+  .lensbar select,select,input[type=text],input[type=password]{min-width:0;width:100%}
+  .field,.field select{width:100%}
+  .qname{min-width:120px}
+  .seg button{padding:6px 8px}
+  .toast{left:12px;right:12px;bottom:14px;transform:translateY(120px);max-width:none}
+  .toast.show{transform:translateY(0)}
+  .opsheet{margin:0}
+  .grid2{gap:12px}
+}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>SALE EVENT READINESS</h1><div class="sub">Store self-service entry · Live HQ dashboard · Manager sign-off</div></div>
+  <span class="demo-pill">● PROTOTYPE v2 · typed fields + auto-remarks</span>
+  <div class="nav">
+    <button id="tab-dash" class="active" onclick="show('dash')">HQ Dashboard</button>
+    <button id="tab-entry" onclick="show('entry')">Store Entry</button>
+    <button id="tab-review" onclick="show('review')">Cluster Review</button>
+    <button id="tab-summary" onclick="show('summary')">Regional Manager Insight</button>
+    <button id="tab-damages" onclick="show('damages')">Damages</button>
+  </div>
+</header>
+<main>
+
+<section id="view-dash" class="view active">
+  <div class="flowbox">
+    <b>Live dashboard.</b> Each store fills its own checklist and saves; this dashboard updates automatically about <b>every minute</b> (or press Refresh for now). Readiness = completed ÷ applicable across all field types. Click any store row to see its pending items and reasons.
+  </div>
+  <div class="lensbar"><span class="lenslbl">Lens</span><select id="mgrfilter" onchange="setLens(this.value)"></select><span class="muted" id="lensnote" style="font-size:12px"></span>
+    <span style="margin-left:auto;display:flex;align-items:center;gap:10px"><span class="muted" id="syncinfo" style="font-size:11.5px"></span><button class="jumpbtn" style="margin-left:0" onclick="manualSync()">🔄 Refresh</button></span></div>
+  <div class="kpis" id="kpis"></div>
+  <div class="grid2">
+    <div class="card"><div class="panel-h"><h3>Readiness by Category</h3><span class="muted" style="font-size:11.5px">completed ÷ applicable</span></div><div class="panel-b" id="catbars"></div></div>
+    <div class="card"><div class="panel-h"><h3>By Cluster Manager</h3></div><div class="panel-b"><div class="region-chips" id="regionchips"></div></div></div>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <div class="panel-h"><h3>Store Readiness <span class="muted" id="storecount" style="font-size:12px;font-weight:400"></span></h3><input class="search" id="storesearch" placeholder="Filter…" oninput="renderTable()"></div>
+    <div class="tablewrap"><table>
+      <thead><tr>
+        <th onclick="sortBy('name')">Store</th><th onclick="sortBy('mgr')">Cluster Manager</th>
+        <th class="num" onclick="sortBy('pct')">Readiness</th><th class="num" onclick="sortBy('pending')">Pending</th>
+        <th onclick="sortBy('updatedAt')">Last Update</th><th onclick="sortBy('pct')">Status</th><th>Mgr Review</th>
+      </tr></thead><tbody id="storetbody"></tbody>
+    </table></div>
+  </div>
+</section>
+
+<section id="view-entry" class="view">
+  <div class="flowbox"><b>Store view:</b> set each item; a <b>number box</b>, <b>clock</b>, or <b>Yes/No</b> appears depending on the question. Mark anything <b>Pending / Not Started / Not Received / No</b> and a remarks box pops up — say why and what's the plan. Save once when done.</div>
+  <div class="card" style="padding:16px 18px">
+    <div class="entry-top">
+      <div class="field"><label>Select your store</label><select id="storepick" onchange="loadStore()"></select></div>
+      <div class="field"><label>Cluster Manager (auto)</label><input type="text" id="mgrfield" readonly></div>
+      <div class="store-meter"><div class="big pct" id="storepct">0%</div><div class="cap">store readiness</div></div>
+    </div>
+    <div id="entrygate" style="display:none"></div>
+    <div id="entryform">
+      <div class="entry-toolbar">
+        <label class="toggle"><input type="checkbox" id="onlyunfinished" onchange="loadStore()"><span>Show only unfinished items</span></label>
+        <button class="jumpbtn" onclick="jumpUnfinished()">Jump to first unfinished ↓</button>
+      </div>
+      <div id="accordions"></div>
+      <div class="actions"><button class="btn btn-primary" onclick="saveStore()">Save &amp; push to dashboard</button><span class="muted" style="font-size:12px" id="savedhint"></span></div>
+      <div class="muted" style="font-size:11.5px;margin-top:10px;line-height:1.6">Saving overwrites only this store's row and logs who/when. No bulk &ldquo;mark all&rdquo; or &ldquo;reset&rdquo;.</div>
+    </div>
+  </div>
+</section>
+
+<section id="view-review" class="view">
+  <div id="reviewgate"><div class="card gatecard">
+    <div class="gatelock">🔒</div>
+    <h2 class="section" style="font-size:17px">Cluster Review</h2>
+    <p class="muted" style="font-size:13px;margin:6px 0 16px">Enter your passcode. You'll see only your stores, review each requirement read-only, and sign off once aligned. Sign-off never changes store data.</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <input type="password" id="pass" placeholder="Passcode" onkeydown="if(event.key==='Enter')unlockReview()">
+      <button class="btn btn-primary" onclick="unlockReview()">Unlock</button>
+      <span id="gateerr" style="color:var(--red);font-size:12.5px;font-weight:600"></span>
+    </div>
+    <div class="muted" style="font-size:11px;margin-top:16px;line-height:1.7">Enter your personal review code. Codes are confidential and issued to each Cluster Manager separately.<span id="demopass"></span></div>
+  </div></div>
+  <div id="reviewpanel" style="display:none">
+    <div class="lensbar" style="justify-content:space-between">
+      <div><span class="lenslbl">Reviewing as</span> &nbsp;<b id="whoami" style="font-size:15px"></b> <span class="muted" id="revcount" style="font-size:12px"></span></div>
+      <button class="btn btn-ghost" onclick="lockReview()">Lock / switch manager</button>
+    </div>
+    <div id="reviewcards"></div>
+  </div>
+</section>
+
+<section id="view-summary" class="view">
+  <div class="flowbox"><b>Sign-off tracker.</b> Read-only rollup of each Cluster Manager's review outcomes across their stores — who's fully reviewed and who's behind. Sorted least-reviewed first so gaps surface at the top. Sign-off resets to "Re-review" if a store edits after being signed off.</div>
+  <div class="kpis" id="sumkpis"></div>
+  <div class="card">
+    <div class="panel-h"><h3>Review Sign-off by Cluster Manager</h3><span class="muted" style="font-size:11.5px">least reviewed first</span></div>
+    <div class="tablewrap"><table>
+      <thead><tr>
+        <th>Cluster Manager</th><th class="num">Stores</th><th class="num">✓ Signed Off</th>
+        <th class="num">Awaiting</th><th class="num">Re-review</th><th class="num">Not Submitted</th><th>% Reviewed</th>
+      </tr></thead><tbody id="sumtbody"></tbody>
+    </table></div>
+  </div>
+</section>
+
+<section id="view-damages" class="view">
+  <div class="flowbox"><b>Warehouse damages.</b> Store-wise units received as damaged / missing a component / wrong barcode, from the line items stores enter under Sale TO &amp; Damages. Value = Qty × Retail, summed. Read-only, open to anyone. Sorted by value.</div>
+  <div class="kpis" id="dmgkpis"></div>
+  <div class="card">
+    <div class="panel-h"><h3>Damages by Store</h3><span class="muted" id="dmgcount" style="font-size:11.5px"></span></div>
+    <div class="tablewrap"><table>
+      <thead><tr id="dmghead"></tr></thead><tbody id="dmgtbody"></tbody>
+    </table></div>
+  </div>
+</section>
+
+</main>
+<div class="overlay" id="overlay" onclick="if(event.target===this)closeOP()"><div class="opsheet" id="opsheet"></div></div>
+<div class="toast" id="toast">Saved — dashboard updated</div>
+
+<script>
+/* ===================== CONFIG =====================
+   To go LIVE with Google Sheets: paste your Apps Script Web App /exec URL below.
+   Leave it "" to run as a local demo (data stays in this browser only). */
+const CONFIG = { API_URL: "https://script.google.com/macros/s/AKfycbwZvOxWpvkXu3AmaZrAqSaTwcORnAuoMO1bNXOWqGD4E86Rs0mcSQI5YR81oKLO7G2V_w/exec" };
+
+/* ===================== STORES ===================== */
+const STORES=[
+{name:"Allama Iqbal Town, Lahore",mgr:"Yasir Siddiqui"},{name:"Ferozwatwan FOL, Sheikhpura",mgr:"Yasir Siddiqui"},
+{name:"Avenue Plaza, Bahawalpur",mgr:"Ali Hyder"},{name:"DMC, Karachi",mgr:"Imran Azeem"},
+{name:"Blue Area, Swat",mgr:"Abdul Rehman"},{name:"Centaurus Mall 2, Islamabad",mgr:"Abdul Rehman"},
+{name:"Centaurus Mall, Islamabad",mgr:"Abdul Rehman"},{name:"College Road, Sahiwal",mgr:"Ali Hyder"},
+{name:"Lucky One Mall, Karachi",mgr:"Imran Azeem"},{name:"Bahadurabad Store",mgr:"Imran Azeem"},
+{name:"DMTR, Karachi",mgr:"Imran Azeem"},{name:"Dolmen Mall Lahore",mgr:"Yasir Siddiqui"},
+{name:"Dolphin Chowk, Mirpur",mgr:"Muhammad Usman Yousaf"},{name:"Emporium Mall, Lahore",mgr:"Ali Hyder"},
+{name:"F-10, Islamabad",mgr:"Abdul Rehman"},{name:"UOL FOL, Lahore",mgr:"Ali Hyder"},
+{name:"Giga Mall WTC, Rawalpindi",mgr:"Muhammad Usman Yousaf"},{name:"Gujranwala Rahwali Store",mgr:"Usman Saeed"},
+{name:"Gulberg II, Lahore",mgr:"Yasir Siddiqui"},{name:"Gulgasht Colony, Multan",mgr:"Ali Hyder"},
+{name:"Atrium Mall Sadar",mgr:"Imran Azeem"},{name:"Autobahn Road, Hyderabad",mgr:"Imran Azeem"},
+{name:"Jaranwala Road, Faisalabad",mgr:"Yasir Siddiqui"},{name:"Jhangg Store",mgr:"Franchise"},
+{name:"Jhangi Chowk, Abbottabad",mgr:"Abdul Rehman"},{name:"Dolmen Mall Hyderi",mgr:"Imran Azeem"},
+{name:"Kutchery Road, Gujrat",mgr:"Usman Saeed"},{name:"Lake City Mall, Lahore",mgr:"Ali Hyder"},
+{name:"Layalpur Galleria, Faisalabad",mgr:"Yasir Siddiqui"},{name:"Packages Mall, Lahore",mgr:"Ali Hyder"},
+{name:"Pindi Saddar, Rawalpindi",mgr:"Muhammad Usman Yousaf"},{name:"PWD Islamabad Store",mgr:"Muhammad Usman Yousaf"},
+{name:"Rahim Yar Khan Store",mgr:"Ali Hyder"},{name:"Safa Gold Mall, Islamabad",mgr:"Abdul Rehman"},
+{name:"Sargodha Road, Sheikhpura",mgr:"Yasir Siddiqui"},{name:"Sargodha Store",mgr:"Usman Saeed"},
+{name:"Satellite Town, Gujranwala",mgr:"Usman Saeed"},{name:"Square One Mall, Karachi",mgr:"Imran Azeem"},
+{name:"S-Town, Rawalpindi",mgr:"Muhammad Usman Yousaf"},{name:"University Road, Peshawar",mgr:"Abdul Rehman"},
+{name:"V-Mall, Sialkot",mgr:"Usman Saeed"},{name:"Wapda Town Lahore",mgr:"Yasir Siddiqui"},
+{name:"Y-Block DHA, Lahore",mgr:"Ali Hyder"},{name:"Mall of Pindi Saddar",mgr:"Muhammad Usman Yousaf"},
+{name:"King Mall Gujranwala",mgr:"Usman Saeed"},{name:"Hyderi Bazar Largesse, Karachi",mgr:"Imran Azeem"},
+{name:"Jail Road, Mandi Bahauddin-02",mgr:"Usman Saeed"},{name:"Giga Boutique",mgr:"Muhammad Usman Yousaf"},
+{name:"Bahria Town Lahore",mgr:"Yasir Siddiqui"}
+];
+
+/* ===================== TYPED SCHEMA (amendments applied) ===================== */
+// status option sets
+const O_STD=["Not Started","In Progress","Completed","Not Applicable"];
+const O_RECV=["Not Received","Partially Received","Fully Received","Not Required"];
+const O_DW=["Not Started","In Progress","Completed","Pending at HR End","Not Applicable"];
+const O_MALL=["Yes","Pending","Not Applicable"];
+const DONE={ "Completed":1,"Fully Received":1,"Yes":1,"Allowed":1 };
+const NA={ "Not Applicable":1,"Not Required":1 };
+// field builders (last arg `o` = extra props: showIf, remarkOn, noRemark, gate)
+function mrg(base,o){return o?Object.assign(base,o):base;}
+function st(q,opts,o){return mrg({t:'st',q,opts},o);}
+function yn(q,o){return mrg({t:'yn',q},o);}
+function yna(q,o){return mrg({t:'yna',q},o);}
+function num(q,help,o){return mrg({t:'num',q,help},o);}
+function pair(q,l1,l2,o){return mrg({t:'pair',q,l1:l1||'Demand',l2:l2||'Received'},o);}
+function num2(q,l1,l2,o){return mrg({t:'num2',q,l1,l2},o);}
+function time(q,o){return mrg({t:'time',q},o);}
+function ynum(q,numq,o){return mrg({t:'ynum',q,numq},o);}
+function ynanum(q,numq,o){return mrg({t:'ynanum',q,numq},o);}
+function condnum(q,help,gate){return {t:'num',q,help,gate};} // hidden when gate ynanum = Not Applicable (cat 7)
+function split(q,parts,o){return mrg({t:'split',q,parts},o);}
+function dmg(q,o){return mrg({t:'damagelist',q},o);}   // repeatable warehouse-damage line items
+const ISSUE_TYPES=["Damage","Missing barcode","Missing/Damage Inlay","Missing component","Wrong barcode","Damage packing"];
+function findFieldByQ(q){return SCHEMA.flatMap(c=>c.f).find(x=>x.q===q);}
+
+const SCHEMA=[
+{n:"1. Stock & Merchandise",f:[
+  st("Daily Wager Enrollment",O_DW),
+  st("Category-wise Floor Plan Development",O_STD),
+  yn("Category-wise Floor Plan — Discussed & Approved by Cluster"),
+  st("Segregation of Sale & Non-Sale Back Areas",O_STD),
+  st("Shopping Bags & NTIs Received",O_RECV),
+  st("Size/Unit Sets < 4 Units Separated & Marked LS",O_STD),
+  st("IT Equipment Status",O_RECV),
+  st("Remaining NTIs (Excl. Hangers)",O_RECV),
+  st("Stickers Status",O_RECV),
+  st("All TOs Closed & Updated in D365",O_STD)
+]},
+{n:"2. NOS & Vehicle",f:[
+  yn("NOS Vehicle Required",{remarkOn:'Yes'}),
+  num("No. of Days",null,{showIf:{q:"NOS Vehicle Required",val:'Yes'}})
+]},
+{n:"3. NTI's & Cash Counter",f:[
+  pair("Instore Carry Bags"),pair("Adult Top Hanger"),pair("Adult Bottom Hangers"),
+  pair("Queue Polls"),pair("Belts for Queue Polls"),pair("Paper Shopping Bags"),
+  pair("Keenu POS"),pair("Alfalah POS"),pair("Meezan POS"),pair("HBL POS")
+]},
+{n:"4. Cash Counters",f:[
+  num("Total POS Available","= Fragrance + Express + Male + Regular"),
+  num("Fragrance Counter"),num("Express Counter"),num("Male Only Counter"),num("Regular Counter")
+]},
+{n:"5. Timing & Store Entry",f:[
+  time("Day 1 — Opening / Closing"),time("Day 2 — Opening / Closing"),time("Day 3 — Opening / Closing"),
+  time("Day 4 — Opening / Closing"),time("Day 5 — Opening / Closing"),
+  st("Mall Acknowledgement — Early Opening",O_MALL),
+  yn("Men's Entry Allowed — Day 1",{noRemark:true}),yn("Men's Entry Allowed — Day 2",{noRemark:true}),
+  yn("Men's Entry Allowed — Day 3",{noRemark:true}),yn("Men's Entry Allowed — Day 4",{noRemark:true}),
+  yn("Men's Entry Allowed — Day 5",{noRemark:true})
+]},
+{n:"6. Branding & Signage",f:[
+  st("Branding Completion",O_STD),
+  st("Printing of Sale Signages",O_STD)
+]},
+{n:"7. Floor Design Plan",f:[
+  ynum("Women Unstitched — Designs Finalised","How many designs finalised"),
+  num("Women Unstitched — Display Threshold (qty available per design, e.g. >10)"),
+  num("Women Unstitched — Total Floor Units"),
+  ynum("Women Stitched — Designs Finalised","How many designs finalised"),
+  split("Women Stitched — Units Displayed per Design",["Shirts","Trousers","Combos"]),
+  num("Women Stitched — Total Floor Display Units"),
+  ynum("Women Modest — Designs Finalised","How many designs finalised"),
+  num("Women Modest — Units Displayed per Design"),
+  num("Women Modest — Total Units Displayed"),
+  ynanum("Women Western — Designs Finalised","How many designs finalised"),
+  condnum("Women Western — Units Displayed per Design",null,"Women Western — Designs Finalised"),
+  condnum("Women Western — Total Units Displayed",null,"Women Western — Designs Finalised"),
+  ynanum("Men's Stitched — Designs Finalised","How many designs finalised"),
+  condnum("Men's Stitched — Units Displayed per Design",null,"Men's Stitched — Designs Finalised"),
+  condnum("Men's Stitched — Total Units Displayed",null,"Men's Stitched — Designs Finalised")
+]},
+{n:"8. Staff Plan",f:[
+  num2("Cash Counter","Staff","Daily Wagers"),num2("Women Stitched","Staff","Daily Wagers"),num2("Women Unstitched","Staff","Daily Wagers"),
+  num2("Men's Stitched","Staff","Daily Wagers"),num2("Men's Unstitched","Staff","Daily Wagers"),num2("Home Textile","Staff","Daily Wagers"),
+  num2("Women Western","Staff","Daily Wagers"),num2("Shoes & Bags","Staff","Daily Wagers"),num2("Exit Control","Staff","Daily Wagers"),
+  num2("Stock Room","Staff","Daily Wagers"),num2("Kids Stitched","Staff","Daily Wagers"),num2("Others","Staff","Daily Wagers")
+]},
+{n:"9. Badges & Ribbons",f:[
+  pair("Ribbons","Required","Received"),pair("Ribbon Jackets","Required","Received"),pair("Trainee Badges","Required","Received")
+]},
+{n:"10. Float & Budget",f:[
+  yn("Sale Float Received"),
+  num("Sale Float Amount (PKR)",null,{showIf:{q:"Sale Float Received",val:'Yes'}}),
+  st("Sale Budget Status",O_RECV),num("Sale Budget Amount (PKR)")
+]},
+{n:"11. IT Status",f:[
+  st("Dynamics Install Status",O_STD),
+  pair("Keyboard"),pair("Scanner"),pair("Mouse"),pair("POS Printer"),
+  pair("Soft Tag Diffuser"),pair("Cash Drawer"),pair("Thermal Rolls")
+]},
+{n:"12. Sale TO & Damages",f:[
+  num2("Pending Outward TOs","No. of TOs","Total Units"),
+  num2("Pending Inward TOs","No. of TOs","Total Units"),
+  yn("Any Damage Units Received",{noRemark:true,confirm:true}),
+  dmg("Damage Details (per item received)",{showIf:{q:"Any Damage Units Received",val:'Yes'}}),
+  yn("All damages email routed to WH with complete details & pictures",{showIf:{q:"Any Damage Units Received",val:'Yes'}})
+]}
+];
+// Stable, content-based ids (slug of the question) so saved data survives
+// reordering/adding questions. Renaming a question is the only thing that
+// orphans its old answer — expected.
+const FIELDS={};
+function slugify(q){return q.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'').slice(0,44);}
+(function(){const seen={};
+  SCHEMA.forEach((c,ci)=>c.f.forEach((f)=>{
+    let base=slugify(f.q)||'field', id=base, k=2;
+    while(seen[id]){id=base+'_'+k;k++;}
+    seen[id]=1; f.id=id; f.ci=ci; FIELDS[id]=f;
+  }));
+})();
+function fieldById(id){return FIELDS[id];}
+
+/* ===================== ENGINE: value defaults, done/applicable ===================== */
+function defVal(f){
+  switch(f.t){
+    case 'st': return {v:(f.opts.find(o=>NA[o])||f.opts[0]),remark:''};   // default to this field's N/A option
+    case 'yn': case 'yna': return {v:'',remark:''};
+    case 'num': return {v:''};
+    case 'pair': case 'num2': return {a:'',b:''};
+    case 'time': return {o:'',c:''};
+    case 'ynum': case 'ynanum': return {v:'',n:'',remark:''};
+    case 'split': return {a:'',b:'',c:''};
+    case 'damagelist': return {lines:[]};
+  }
+}
+function dmgFieldId(){ const f=findFieldByQ("Damage Details (per item received)"); return f?f.id:null; }
+function dmgTotals(lines){ let units=0,value=0; const byType={};
+  (lines||[]).forEach(L=>{ const q=Number(L.qty)||0, p=Number(L.price)||0; units+=q; value+=q*p; const it=L.issue||'Damage'; byType[it]=(byType[it]||0)+q; });
+  return {units,value,byType}; }
+function blankData(){const d={};SCHEMA.forEach(c=>c.f.forEach(f=>d[f.id]=defVal(f)));return d;}
+function gateNA(store,f){ // conditional field hidden when its gate is Not Applicable
+  if(!f.gate) return false;
+  const g=SCHEMA.flatMap(c=>c.f).find(x=>x.q===f.gate);
+  if(!g) return false; const gv=store.data[g.id];
+  return gv && gv.v==='Not Applicable';
+}
+// conditional: field is only applicable when gate field's value === showIf.val
+function showIfNA(store,f){
+  if(!f.showIf) return false;
+  const g=findFieldByQ(f.showIf.q); if(!g) return false;
+  const gv=store.data[g.id];
+  return !gv || gv.v!==f.showIf.val;   // gate not set to required value -> auto N/A
+}
+// returns {app:0/1, done:0/1, needRemark:bool, label:string}
+function fieldStat(store,f){
+  const val=store.data[f.id]||defVal(f);   // missing field (e.g. added after a save) -> treat as its default
+  if(gateNA(store,f)) return {app:0,done:0,label:'N/A (parent not applicable)'};
+  if(showIfNA(store,f)) return {app:0,done:0,label:'N/A (auto)'};
+  let res;
+  switch(f.t){
+    case 'st':{ const na=NA[val.v]; const done=DONE[val.v]?1:0;
+      res={app:na?0:1,done,needRemark:!na&&!done&&val.v!=='',label:val.v}; break; }
+    case 'yn':{ const done = f.confirm ? (val.v!==''?1:0) : (val.v==='Yes'?1:0);
+      res={app:1,done,needRemark:(!f.confirm&&val.v==='No'),label:val.v||'—'}; break; }
+    case 'damagelist':{ const lines=val.lines||[];
+      const complete=lines.length>0 && lines.every(L=>L.to&&L.barcode&&L.qty!==''&&L.qty!=null&&L.price!==''&&L.price!=null&&L.issue);
+      const t=dmgTotals(lines);
+      res={app:1,done:complete?1:0,needRemark:false,label:lines.length?(t.units+' units · PKR '+t.value.toLocaleString()):'—'}; break; }
+    case 'yna':{ const na=val.v==='Not Applicable'; const done=val.v==='Yes'?1:0;
+      res={app:na?0:1,done,needRemark:val.v==='No',label:val.v||'—'}; break; }
+    case 'num':{ const done=val.v!==''?1:0; res={app:1,done,needRemark:false,label:val.v===''?'—':val.v}; break; }
+    case 'pair':{ const ok=val.a!==''&&val.b!==''&&Number(val.b)>=Number(val.a);
+      res={app:1,done:ok?1:0,needRemark:false,label:(val.b||'0')+'/'+(val.a||'0')}; break; }
+    case 'num2':{ const done=val.a!==''&&val.b!==''?1:0; res={app:1,done,needRemark:false,label:(val.a||'—')+' / '+(val.b||'—')}; break; }
+    case 'time':{ const done=val.o&&val.c?1:0; res={app:1,done,needRemark:false,label:done?(val.o+'–'+val.c):'—'}; break; }
+    case 'ynum':{ const done=val.v==='Yes'&&val.n!==''?1:0;
+      res={app:1,done,needRemark:val.v==='No',label:val.v==='Yes'?('Yes ('+(val.n||'?')+')'):(val.v||'—')}; break; }
+    case 'ynanum':{ const na=val.v==='Not Applicable'; const done=val.v==='Yes'&&val.n!==''?1:0;
+      res={app:na?0:1,done,needRemark:val.v==='No',label:val.v==='Yes'?('Yes ('+(val.n||'?')+')'):(val.v||'—')}; break; }
+    case 'split':{ const done=val.a!==''&&val.b!==''&&val.c!==''?1:0;
+      res={app:1,done,needRemark:false,label:done?[val.a,val.b,val.c].join('/'):'—'}; break; }
+    default: res={app:1,done:0,needRemark:false};
+  }
+  // per-field remark overrides
+  if(f.noRemark) res.needRemark=false;
+  else if(f.remarkOn) res.needRemark = (val.v===f.remarkOn);
+  return res;
+}
+function storeStats(s){
+  if(!s.data) return {pct:0,done:0,app:0,pending:0,filled:false};
+  let done=0,app=0;
+  SCHEMA.forEach(c=>c.f.forEach(f=>{const r=fieldStat(s,f);app+=r.app;done+=r.done;}));
+  return {pct:app?done/app:0,done,app,pending:app-done,filled:!!s.updatedAt};
+}
+function catStat(s,ci){ let done=0,app=0; SCHEMA[ci].f.forEach(f=>{const r=fieldStat(s,f);app+=r.app;done+=r.done;}); return {done,app,pct:app?done/app:null}; }
+function pendingByCat(s){ if(!s.data)return [];
+  const out=[]; SCHEMA.forEach((c,ci)=>{ const items=[];
+    c.f.forEach(f=>{const r=fieldStat(s,f); if(r.app&&!r.done){ const val=s.data[f.id];
+      items.push({id:f.id,q:f.q,label:r.label,remark:(val&&val.remark)||''}); }});
+    if(items.length) out.push({cat:c.n,items});
+  }); return out;
+}
+
+/* ===================== clean slate (no fabricated data) ===================== */
+// All stores start unsubmitted; opening a store in Entry creates a blank template
+// where every task defaults to Not Applicable. No pre-filled remarks or sample values.
+function seed(){ STORES.forEach(s=>{ s.data=null; s.updatedAt=null; s.updatedBy=null; s.review=null; }); }
+seed();
+function fmtAgo(t){ if(!t)return "—"; const m=(Date.now()-t)/60000;
+  if(m<1)return "just now"; if(m<60)return Math.round(m)+"m ago"; return Math.round(m/60)+"h ago"; }
+function color(p){return p>=.85?'var(--green)':p>=.8?'var(--amber)':'var(--red)';}      // <80% = red (At Risk)
+function badgeClass(p){return p>=.85?'b-green':p>=.8?'b-amber':'b-red';}
+function pctTxt(p){return Math.round(p*100)+'%';}
+function avg(a){return a.length?a.reduce((x,y)=>x+y,0)/a.length:0;}
+
+/* ===================== DASHBOARD ===================== */
+let lens='All';
+function scopeStores(){return lens==='All'?STORES:STORES.filter(s=>s.mgr===lens);}
+function buildLens(){const mgrs=[...new Set(STORES.map(s=>s.mgr))].sort();
+  document.getElementById('mgrfilter').innerHTML='<option value="All">All Cluster Managers ('+STORES.length+' stores)</option>'+
+    mgrs.map(m=>'<option value="'+m+'">'+m+' ('+STORES.filter(s=>s.mgr===m).length+')</option>').join('');}
+function setLens(v){lens=v;renderDash();document.getElementById('lensnote').textContent=v==='All'?'':'Showing only '+v+"'s stores.";}
+function renderDash(){
+  const scope=scopeStores(); const stats=scope.map(s=>({s,...storeStats(s)}));
+  const overall=avg(stats.map(x=>x.pct)), N=scope.length;
+  const ready=stats.filter(x=>x.pct>=.85).length, notStarted=stats.filter(x=>!x.filled).length;
+  const atrisk=stats.filter(x=>x.filled&&x.pct<.8).length, pend=stats.reduce((a,x)=>a+x.pending,0);
+  const signedOff=stats.filter(x=>reviewState(x.s)==='done').length;
+  document.getElementById('kpis').innerHTML=[
+    kpi('Overall Readiness',pctTxt(overall),(N-notStarted)+' of '+N+' filled',color(overall)),
+    kpi('Stores Ready',ready+' / '+N,'at ≥85%',color(N?ready/N:0)),
+    kpi('Mgr Signed Off',signedOff+' / '+N,'reviewed',color(N?signedOff/N:0)),
+    kpi('Not Started',notStarted,'never submitted',notStarted?'var(--red)':'var(--green)'),
+    kpi('At Risk',atrisk,'below 80%','var(--red)'),
+    kpi('Open Items',pend.toLocaleString(),'pending in view','var(--amber)')
+  ].join('');
+  document.getElementById('catbars').innerHTML=SCHEMA.map((c,ci)=>{
+    const ps=scope.map(s=>s.data?catStat(s,ci).pct:null).filter(v=>v!=null); const p=avg(ps);
+    return '<div class="catbar"><div class="top"><b>'+c.n+'</b><span class="pct" style="color:'+color(p)+'">'+pctTxt(p)+'</span></div><div class="track"><div class="fill" style="width:'+(p*100)+'%;background:'+color(p)+'"></div></div></div>';
+  }).join('');
+  const regs={}; stats.forEach(x=>{(regs[x.s.mgr]=regs[x.s.mgr]||[]).push(x.pct);});
+  document.getElementById('regionchips').innerHTML=Object.keys(regs).sort().map(r=>{const p=avg(regs[r]);
+    return '<div class="rchip"><div class="rn">'+r+' · '+regs[r].length+' stores</div><div class="rv" style="color:'+color(p)+'">'+pctTxt(p)+'</div><div class="track" style="margin-top:6px"><div class="fill" style="width:'+(p*100)+'%;background:'+color(p)+'"></div></div></div>';
+  }).join('');
+  renderTable();
+}
+function kpi(l,v,f,c){return '<div class="kpi card"><div class="lbl">'+l+'</div><div class="val" style="color:'+c+'">'+v+'</div><div class="foot">'+f+'</div></div>';}
+let sortKey='pct',sortDir=1;
+function sortBy(k){if(sortKey===k)sortDir*=-1;else{sortKey=k;sortDir=(k==='name'||k==='mgr')?1:-1;}renderTable();}
+function renderTable(){
+  const q=(document.getElementById('storesearch').value||'').toLowerCase();
+  let rows=STORES.map((s,idx)=>({idx,name:s.name,mgr:s.mgr,updatedAt:s.updatedAt||0,...storeStats(s)}));
+  rows=rows.filter(r=>(lens==='All'||r.mgr===lens)&&(r.name.toLowerCase().includes(q)||r.mgr.toLowerCase().includes(q)));
+  rows.sort((a,b)=>{let x=a[sortKey],y=b[sortKey];if(typeof x==='string')return x.localeCompare(y)*sortDir;return (x-y)*sortDir;});
+  document.getElementById('storecount').textContent='('+rows.length+' shown)';
+  document.getElementById('storetbody').innerHTML=rows.map(r=>{
+    const c=color(r.pct);
+    const sb=!r.filled?'<span class="badge b-red">Not Started</span>':r.pct>=.85?'<span class="badge b-green">Ready</span>':r.pct>=.8?'<span class="badge b-amber">On Track</span>':'<span class="badge b-red">At Risk</span>';
+    const rc=r.filled?'<span class="minibar"><i style="width:'+(r.pct*100)+'%;background:'+c+'"></i></span><b class="pct" style="color:'+c+'">'+pctTxt(r.pct)+'</b>':'<span class="muted">—</span>';
+    const main='<tr class="strow" onclick="toggleDrill('+r.idx+')"><td><span class="exp" id="exp'+r.idx+'">▸</span> '+r.name+' &nbsp;<span class="op-link" onclick="event.stopPropagation();openOP('+r.idx+')">one-pager</span></td><td>'+r.mgr+'</td><td class="num">'+rc+'</td><td class="num">'+(r.filled?r.pending:'—')+'</td><td class="muted" style="font-size:11.5px">'+fmtAgo(r.updatedAt||null)+'</td><td>'+sb+'</td><td>'+reviewBadge(r.idx)+'</td></tr>';
+    return main+'<tr class="drill" id="drill'+r.idx+'" style="display:none"><td colspan="7">'+drillHTML(r.idx)+'</td></tr>';
+  }).join('');
+}
+function drillHTML(idx){const s=STORES[idx];
+  if(!s.updatedAt)return '<div class="drillbox muted">Store has not submitted its checklist yet. Cluster Manager to follow up.</div>';
+  const pend=pendingByCat(s);
+  if(!pend.length)return '<div class="drillbox" style="color:var(--green)"><b>Fully ready.</b> No pending items. Last saved '+fmtAgo(s.updatedAt)+'.</div>';
+  const blocks=pend.map(p=>'<div class="dcat"><div class="dch">'+p.cat+' <span class="muted">('+p.items.length+' pending)</span></div>'+
+    p.items.map(it=>'<div class="ditem"><span class="dot" style="background:var(--amber)"></span><div><div>'+it.q+' <span class="dstat">'+it.label+'</span></div>'+(it.remark?'<div class="muted" style="font-size:11px">📝 '+it.remark+'</div>':'')+'</div></div>').join('')+'</div>').join('');
+  return '<div class="drillbox"><div class="drillhead">Pending items · last saved '+fmtAgo(s.updatedAt)+'</div><div class="dcats">'+blocks+'</div></div>';
+}
+function toggleDrill(idx){const d=document.getElementById('drill'+idx),e=document.getElementById('exp'+idx);
+  const open=d.style.display==='none';d.style.display=open?'table-row':'none';if(e)e.textContent=open?'▾':'▸';}
+function reviewBadge(idx){const s=STORES[idx],st=reviewState(s);const nf=flagCount(s);
+  const flag=nf?' <span class="badge b-red" title="open manager flags">⚑'+nf+'</span>':'';
+  if(st==='done')return '<span class="badge b-green">✓ '+s.review.by.split(' ')[0]+'</span>'+flag;
+  if(st==='stale')return '<span class="badge b-red">Re-review</span>'+flag;
+  return '<span class="badge b-amber">Awaiting</span>'+flag;}
+
+/* ===================== STORE ENTRY (typed + auto-remarks) ===================== */
+let current=0, openCats=new Set([0]);
+function buildPicker(){const byMgr={};STORES.forEach((s,i)=>{(byMgr[s.mgr]=byMgr[s.mgr]||[]).push({s,i});});
+  document.getElementById('storepick').innerHTML=Object.keys(byMgr).sort().map(r=>'<optgroup label="'+r+'">'+byMgr[r].map(o=>'<option value="'+o.i+'">'+o.s.name+'</option>').join('')+'</optgroup>').join('');}
+function segClass(kind){return kind;}
+function renderField(s,f){
+  let v=s.data[f.id]; if(!v){ v=s.data[f.id]=defVal(f); }   // self-heal any missing field
+  const r=fieldStat(s,f);
+  if(gateNA(s,f)) return ''; // cat-7 dependent hidden when parent = Not Applicable
+  if(showIfNA(s,f)){ // conditional auto-N/A (e.g. No. of Days when NOS Vehicle = No)
+    return '<div class="qrow"><div class="qtop"><span class="qdot" style="background:var(--grey)"></span><span class="qname">'+f.q+'</span>'+
+      '<span class="numlab" style="color:var(--grey);font-style:italic">Auto N/A — required only when '+f.showIf.q+' = '+f.showIf.val+'</span></div></div>';
+  }
+  const dotc=r.done?'var(--green)':(r.app?'var(--amber)':'var(--grey)');
+  let control='';
+  if(f.t==='st'){
+    control='<span class="seg">'+f.opts.map(o=>{
+      const cls=DONE[o]?'on-done':NA[o]?'on-na':(o==='In Progress'||o==='Partially Received'||o==='Pending'||o==='Pending at HR End')?'on-mid':'on-bad';
+      return '<button class="'+(v.v===o?cls:'')+'" onclick="setV(\''+f.id+'\',\'v\',\''+o+'\')">'+o+'</button>';}).join('')+'</span>';
+  } else if(f.t==='yn'||f.t==='yna'){
+    const opts=f.t==='yn'?['Yes','No']:['Yes','No','Not Applicable'];
+    control='<span class="seg">'+opts.map(o=>{const cls=o==='Yes'?'on-done':o==='No'?'on-bad':'on-na';
+      return '<button class="'+(v.v===o?cls:'')+'" onclick="setV(\''+f.id+'\',\'v\',\''+o+'\')">'+o+'</button>';}).join('')+'</span>';
+  } else if(f.t==='num'){
+    control='<input class="numin" type="number" min="0" value="'+(v.v||'')+'" oninput="setVQuiet(\''+f.id+'\',\'v\',this.value)">';
+  } else if(f.t==='pair'){
+    const diff=(v.a!==''&&v.b!=='')?(Number(v.a)-Number(v.b)):'';
+    control='<span class="numlab">'+f.l1+'</span><input class="numin" type="number" min="0" value="'+(v.a||'')+'" oninput="setVQuiet(\''+f.id+'\',\'a\',this.value)"> '+
+      '<span class="numlab">'+f.l2+'</span><input class="numin" type="number" min="0" value="'+(v.b||'')+'" oninput="setVQuiet(\''+f.id+'\',\'b\',this.value)"> '+
+      '<span class="numlab">Difference</span><input class="numin" id="diff_'+f.id+'" type="number" tabindex="-1" readonly value="'+diff+'" title="Auto: '+f.l1+' − '+f.l2+'" style="background:var(--greybg);color:'+(diff!==''&&diff>0?'var(--red)':'var(--muted)')+'">';
+  } else if(f.t==='num2'){
+    control='<span class="numlab">'+f.l1+'</span><input class="numin" type="number" min="0" value="'+(v.a||'')+'" oninput="setVQuiet(\''+f.id+'\',\'a\',this.value)"> <span class="numlab">'+f.l2+'</span><input class="numin" type="number" min="0" value="'+(v.b||'')+'" oninput="setVQuiet(\''+f.id+'\',\'b\',this.value)">';
+  } else if(f.t==='time'){
+    control='<span class="numlab">Open</span><input class="timein" type="time" value="'+(v.o||'')+'" onchange="setVQuiet(\''+f.id+'\',\'o\',this.value)"> <span class="numlab">Close</span><input class="timein" type="time" value="'+(v.c||'')+'" onchange="setVQuiet(\''+f.id+'\',\'c\',this.value)">';
+  } else if(f.t==='ynum'||f.t==='ynanum'){
+    const opts=f.t==='ynum'?['Yes','No']:['Yes','No','Not Applicable'];
+    control='<span class="seg">'+opts.map(o=>{const cls=o==='Yes'?'on-done':o==='No'?'on-bad':'on-na';
+      return '<button class="'+(v.v===o?cls:'')+'" onclick="setV(\''+f.id+'\',\'v\',\''+o+'\')">'+o+'</button>';}).join('')+'</span>';
+    if(v.v==='Yes')control+=' <span class="numlab">'+(f.numq||'How many')+'</span><input class="numin" type="number" min="0" value="'+(v.n||'')+'" oninput="setVQuiet(\''+f.id+'\',\'n\',this.value)">';
+  } else if(f.t==='split'){
+    control=f.parts.map((p,i)=>{const key=['a','b','c'][i];
+      return '<span class="numlab">'+p+'</span><input class="numin" type="number" min="0" value="'+(v[key]||'')+'" oninput="setVQuiet(\''+f.id+'\',\''+key+'\',this.value)">';}).join(' ');
+  } else if(f.t==='damagelist'){
+    const lines=v.lines||[];
+    const esc=x=>(x||'').replace(/"/g,'&quot;');
+    const rows=lines.map((L,i)=>{ const lv=(Number(L.qty)||0)*(Number(L.price)||0);
+      return '<tr>'+
+        '<td><input type="text" value="'+esc(L.to)+'" oninput="setDamage(\''+f.id+'\','+i+',\'to\',this.value)"></td>'+
+        '<td><input type="text" value="'+esc(L.barcode)+'" oninput="setDamage(\''+f.id+'\','+i+',\'barcode\',this.value)"></td>'+
+        '<td><input class="numin" type="number" min="0" value="'+(L.qty||'')+'" oninput="setDamage(\''+f.id+'\','+i+',\'qty\',this.value)" style="text-align:right"></td>'+
+        '<td><input class="numin" type="number" min="0" value="'+(L.price||'')+'" oninput="setDamage(\''+f.id+'\','+i+',\'price\',this.value)" style="text-align:right"></td>'+
+        '<td class="dval" id="dval_'+f.id+'_'+i+'">'+((L.qty!==''&&L.price!=='')?lv.toLocaleString():'—')+'</td>'+
+        '<td><select onchange="setDamage(\''+f.id+'\','+i+',\'issue\',this.value)">'+ISSUE_TYPES.map(o=>'<option '+((L.issue||ISSUE_TYPES[0])===o?'selected':'')+'>'+o+'</option>').join('')+'</select></td>'+
+        '<td style="text-align:center"><button class="linkbtn" title="remove" onclick="removeDamageLine(\''+f.id+'\','+i+')">✕</button></td></tr>';
+    }).join('');
+    const t=dmgTotals(lines);
+    const cols='<colgroup><col style="width:16%"><col style="width:16%"><col style="width:9%"><col style="width:13%"><col style="width:12%"><col style="width:26%"><col style="width:8%"></colgroup>';
+    control='<div class="dmgwrap"><div class="dmgscroll"><table class="dmgtbl">'+cols+'<thead><tr><th>TO number</th><th>Barcode</th><th style="text-align:right">Qty</th><th style="text-align:right">Retail price</th><th style="text-align:right">Value</th><th>Issue type</th><th></th></tr></thead>'+
+      '<tbody>'+(rows||'<tr><td colspan="7" class="muted" style="padding:8px">No damage lines yet — add one below.</td></tr>')+'</tbody></table></div>'+
+      '<div class="dmgfoot"><button class="linkbtn" onclick="addDamageLine(\''+f.id+'\')">+ Add damage line</button>'+
+      '<span class="muted" style="margin-left:auto">Total units <b id="dtot_'+f.id+'" style="color:var(--ink)">'+t.units+'</b> &nbsp;·&nbsp; Total value <b id="dvaltot_'+f.id+'" style="color:var(--red)">PKR '+t.value.toLocaleString()+'</b></span></div></div>';
+  }
+  const remark = r.needRemark
+    ? '<div class="remark"><span class="rlbl">⚠ Action / plan</span><input placeholder="" value="'+((v.remark||'').replace(/"/g,'&quot;'))+'" oninput="setVQuiet(\''+f.id+'\',\'remark\',this.value)"></div>'
+    : '';
+  const fl = s.flags && s.flags[f.id];
+  const flagCallout = fl ? '<div class="storeflag"><div class="sfhdr">⚑ Needs fixing — from your Cluster Manager</div><div class="sfnote">'+fl.note.replace(/</g,'&lt;')+'</div>'+
+    '<div class="sfrow"><span class="sfhint">Read it, action it (change the status above only if it applies), then acknowledge.</span><button class="btn btn-primary" style="padding:5px 12px;font-size:12px" onclick="ackFlag(\''+f.id+'\')"><span>✓ Mark as done</span></button></div></div>' : '';
+  return '<div class="qrow'+(fl?' hasflag':'')+'"><div class="qtop"><span class="qdot" style="background:'+dotc+'"></span><span class="qname">'+f.q+'</span>'+control+'</div>'+
+    (f.help?'<div class="qhelp">'+f.help+'</div>':'')+flagCallout+remark+'</div>';
+}
+/* ---- per-store password gate (real access codes; keyed by store name) ---- */
+const STORE_PASS={"Allama Iqbal Town, Lahore":"X5RVVRH","Ferozwatwan FOL, Sheikhpura":"2QNDCM9","Avenue Plaza, Bahawalpur":"MATXA5E","DMC, Karachi":"RP5D4YH","Blue Area, Swat":"HSV68XT","Centaurus Mall 2, Islamabad":"QT7WU3J","Centaurus Mall, Islamabad":"DQV6YSP","College Road, Sahiwal":"6VJKWA6","Lucky One Mall, Karachi":"EZTKVP5","Bahadurabad Store":"2HZEJNH","DMTR, Karachi":"CLSY5XC","Dolmen Mall Lahore":"7YNU3D3","Dolphin Chowk, Mirpur":"ZUGZE73","Emporium Mall, Lahore":"Z8A5J56","F-10, Islamabad":"5LS3JCA","UOL FOL, Lahore":"NGS5V5T","Giga Mall WTC, Rawalpindi":"3GWMSUB","Gujranwala Rahwali Store":"4Y3SFPN","Gulberg II, Lahore":"YZBLZ3U","Gulgasht Colony, Multan":"JY5EKSF","Atrium Mall Sadar":"7H9ULPF","Autobahn Road, Hyderabad":"WDYEPV8","Jaranwala Road, Faisalabad":"4Q2834Z","Jhangg Store":"PWEQ439","Jhangi Chowk, Abbottabad":"CB7W5YR","Dolmen Mall Hyderi":"4C2FBB8","Kutchery Road, Gujrat":"Z8R4R9J","Lake City Mall, Lahore":"7CBLX9Q","Layalpur Galleria, Faisalabad":"L2TUJVK","Packages Mall, Lahore":"CJ2NSBH","Pindi Saddar, Rawalpindi":"6296NRU","PWD Islamabad Store":"TJ23C4U","Rahim Yar Khan Store":"3C9ZSDJ","Safa Gold Mall, Islamabad":"2BKTSEX","Sargodha Road, Sheikhpura":"CKGPQU3","Sargodha Store":"Z6FCRYD","Satellite Town, Gujranwala":"S4A9LJ3","Square One Mall, Karachi":"4YKKWHY","S-Town, Rawalpindi":"Z76E8JP","University Road, Peshawar":"WBE24G4","V-Mall, Sialkot":"LYKHSL8","Wapda Town Lahore":"ZX3PT9C","Y-Block DHA, Lahore":"U5UWNVN","Mall of Pindi Saddar":"7T4UTVY","King Mall Gujranwala":"X8VGS4Q","Hyderi Bazar Largesse, Karachi":"NNX93ZS","Jail Road, Mandi Bahauddin-02":"4YBSW6X","Giga Boutique":"3DNNFT2","Bahria Town Lahore":"6HRYN37"};
+let unlockedStores=new Set();
+function loadStore(){
+  current=+document.getElementById('storepick').value; const s=STORES[current];
+  document.getElementById('mgrfield').value=s.mgr;
+  if(!unlockedStores.has(current)){ renderStoreGate(s); return; }
+  const sc=window.scrollY;
+  document.getElementById('entrygate').style.display='none';
+  document.getElementById('entryform').style.display='block';
+  // Backfill: guarantees every schema field exists even if the Sheet's saved
+  // data predates a newly-added question. Loaded values win; missing get defaults.
+  s.data = s.data ? Object.assign(blankData(), s.data) : blankData();
+  const onlyUn=document.getElementById('onlyunfinished')&&document.getElementById('onlyunfinished').checked;
+  {const sh=document.getElementById('savedhint');sh.style.color='var(--muted)';sh.textContent=s.updatedAt?('Last saved '+fmtAgo(s.updatedAt)):'Not yet saved';}
+  document.querySelector('.entry-toolbar').classList.toggle('filtering',!!onlyUn);
+  // count what the filter is hiding so the store always knows
+  let unfinishedTotal=0, hiddenTotal=0;
+  SCHEMA.forEach((c,ci)=>c.f.forEach(f=>{ if(gateNA(s,f)||showIfNA(s,f))return; const r=fieldStat(s,f);
+    if(r.app&&!r.done) unfinishedTotal++; else hiddenTotal++; }));
+  const banner = onlyUn
+    ? '<div class="filterbanner">🔎 <b>Filtered view</b> — showing only the <b>'+unfinishedTotal+'</b> item'+(unfinishedTotal===1?'':'s')+' still to do. <b>'+hiddenTotal+'</b> completed / N-A item'+(hiddenTotal===1?'':'s')+' hidden. <button onclick="document.getElementById(\'onlyunfinished\').checked=false;loadStore()">Show all items</button></div>'
+    : '';
+  // manager flags for this store -> alert + auto-open those sections
+  const nFlags=flagCount(s);
+  if(nFlags){ SCHEMA.forEach((c,ci)=>{ if(c.f.some(f=>s.flags[f.id])) openCats.add(ci); }); }
+  const flagBanner = nFlags
+    ? '<div class="flagbanner">⚑ <b>'+nFlags+' item'+(nFlags===1?'':'s')+' flagged by your Cluster Manager</b> to fix. Marked in red below — read each, action it, hit <b>Mark as done</b>, then Save.</div>'
+    : '';
+  const accHTML=SCHEMA.map((c,ci)=>{
+    const cs=catStat(s,ci); const allDone=cs.app>0&&cs.done===cs.app;
+    let fields=c.f.filter(f=>!gateNA(s,f));
+    if(onlyUn)fields=fields.filter(f=>{const r=fieldStat(s,f);return r.app&&!r.done;});
+    if(onlyUn&&fields.length===0)return '';
+    const body=fields.map(f=>renderField(s,f)).join('');
+    const open=openCats.has(ci)||onlyUn;
+    return '<div class="acc card '+(open?'open':'')+(allDone?' done':'')+'" data-ci="'+ci+'"><div class="acc-h" onclick="toggleCat('+ci+')"><span class="chev">▶</span><span class="ct">'+c.n+'</span><span class="cnt">'+cs.done+'/'+cs.app+' done</span><span class="cbar"><i style="width:'+((cs.pct||0)*100)+'%;background:'+color(cs.pct||0)+'"></i></span><span class="cp" style="color:'+color(cs.pct||0)+'">'+(cs.pct==null?'—':pctTxt(cs.pct))+'</span></div><div class="acc-b">'+body+'</div></div>';
+  }).join('');
+  const allClear = onlyUn && unfinishedTotal===0 ? '<div class="filterclear">✓ Nothing left to do — every applicable item is complete. <button onclick="document.getElementById(\'onlyunfinished\').checked=false;loadStore()">Show all items</button></div>' : '';
+  document.getElementById('accordions').innerHTML=flagBanner+banner+accHTML+allClear;
+  updateStoreMeter(); try{window.scrollTo(0,sc);}catch(e){}
+}
+function renderStoreGate(s){
+  document.getElementById('entryform').style.display='none';
+  const g=document.getElementById('entrygate'); g.style.display='block';
+  const el=document.getElementById('storepct'); el.textContent='🔒'; el.style.color='var(--muted)';
+  document.getElementById('savedhint')&&(document.getElementById('savedhint').textContent='');
+  g.innerHTML='<div class="card" style="max-width:460px;margin:10px auto 0;padding:24px 22px;text-align:left">'+
+    '<div style="font-size:28px;margin-bottom:6px">🔒</div>'+
+    '<h3 style="margin:0 0 4px;font-size:16px">Enter store password</h3>'+
+    '<p class="muted" style="font-size:12.5px;margin:0 0 14px">Only <b>'+s.name+'</b> can edit its own checklist. Enter the password issued to this store.</p>'+
+    '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">'+
+    '<input type="password" id="storepass" placeholder="Store password" style="min-width:170px" onkeydown="if(event.key===\'Enter\')unlockStore()">'+
+    '<button class="btn btn-primary" onclick="unlockStore()">Unlock</button>'+
+    '<span id="storegateerr" style="color:var(--red);font-size:12.5px;font-weight:600"></span></div>'+
+    '<div class="muted" style="font-size:11px;margin-top:14px;line-height:1.6">Enter the access code issued to this store. Codes are confidential — do not share outside the store.</div>'+
+    '</div>';
+}
+function unlockStore(){
+  const code=(document.getElementById('storepass').value||'').trim();
+  if(code!==STORE_PASS[STORES[current].name]){ document.getElementById('storegateerr').textContent='Incorrect password'; return; }
+  unlockedStores.add(current); loadStore();
+}
+function lockStore(){ unlockedStores.delete(current); loadStore(); }
+function toggleCat(ci){if(openCats.has(ci))openCats.delete(ci);else openCats.add(ci);const el=document.querySelector('.acc[data-ci="'+ci+'"]');if(el)el.classList.toggle('open');}
+function setV(id,key,val){const s=STORES[current];s.data[id][key]=val;
+  s.data[id].ts=Date.now();          // stamp this answer's last-edited time (per-question freshness)
+  // clear remark automatically if field became done or NA
+  const f=fieldById(id); const r=fieldStat(s,f);
+  if(!r.needRemark && s.data[id].remark!==undefined && key==='v') s.data[id].remark='';
+  const fld=fieldById(id); if(fld) openCats.add(fld.ci); loadStore();}
+// store explicitly acknowledges a manager flag (separate from the status dropdown); persists immediately
+function ackFlag(fid){ const s=STORES[current]; if(s.flags) delete s.flags[fid]; apiUnflag(s,fid); loadStore(); renderDash(); }
+// QUIET setter for typed inputs (number / text / time / remark): updates data + meter + this
+// category's header WITHOUT rebuilding the form, so the cursor stays in the box while typing.
+function setVQuiet(id,key,val){ const s=STORES[current]; if(!s.data[id])s.data[id]=defVal(fieldById(id));
+  s.data[id][key]=val; s.data[id].ts=Date.now();
+  const fld=fieldById(id);
+  if(fld){ refreshCatHeader(fld.ci);
+    if(fld.t==='pair'){ const v=s.data[id]; const diff=(v.a!==''&&v.b!=='')?(Number(v.a)-Number(v.b)):'';
+      const el=document.getElementById('diff_'+id); if(el){ el.value=diff; el.style.color=(diff!==''&&diff>0)?'var(--red)':'var(--muted)'; } }
+  }
+  updateStoreMeter();
+}
+// ---- warehouse damage line items ----
+function dmgData(id){ const s=STORES[current]; if(!s.data[id])s.data[id]=defVal(fieldById(id)); if(!s.data[id].lines)s.data[id].lines=[]; return s.data[id]; }
+function setDamage(id,i,key,val){ const dd=dmgData(id); if(!dd.lines[i])dd.lines[i]={to:'',barcode:'',qty:'',price:'',issue:ISSUE_TYPES[0]};
+  dd.lines[i][key]=val; dd.ts=Date.now();
+  const L=dd.lines[i]; const lv=(Number(L.qty)||0)*(Number(L.price)||0);
+  const ve=document.getElementById('dval_'+id+'_'+i); if(ve)ve.textContent=(L.qty!==''&&L.price!=='')?lv.toLocaleString():'—';
+  const t=dmgTotals(dd.lines);
+  const te=document.getElementById('dtot_'+id); if(te)te.textContent=t.units;
+  const vte=document.getElementById('dvaltot_'+id); if(vte)vte.textContent='PKR '+t.value.toLocaleString();
+  const fld=fieldById(id); if(fld)refreshCatHeader(fld.ci); updateStoreMeter();
+}
+function addDamageLine(id){ const dd=dmgData(id); dd.lines.push({to:'',barcode:'',qty:'',price:'',issue:ISSUE_TYPES[0]}); dd.ts=Date.now(); loadStore(); }
+function removeDamageLine(id,i){ const dd=dmgData(id); dd.lines.splice(i,1); dd.ts=Date.now(); loadStore(); }
+function refreshCatHeader(ci){ const s=STORES[current]; const cs=catStat(s,ci);
+  const acc=document.querySelector('.acc[data-ci="'+ci+'"]'); if(!acc)return;
+  const cnt=acc.querySelector('.cnt'); if(cnt)cnt.textContent=cs.done+'/'+cs.app+' done';
+  const bar=acc.querySelector('.cbar i'); if(bar){bar.style.width=((cs.pct||0)*100)+'%';bar.style.background=color(cs.pct||0);}
+  const cp=acc.querySelector('.cp'); if(cp){cp.textContent=cs.pct==null?'—':pctTxt(cs.pct);cp.style.color=color(cs.pct||0);}
+  acc.classList.toggle('done', cs.app>0&&cs.done===cs.app);
+}
+/* ---- manager "needs fixing" flags ---- */
+function storeFlags(s){ return s.flags || (s.flags={}); }
+function toggleFlagBox(idx,fid){ const b=document.getElementById('fb_'+idx+'_'+fid); if(b) b.style.display = b.style.display==='none'?'block':'none'; }
+function sendFlag(idx,fid){ const inp=document.getElementById('fi_'+idx+'_'+fid); const v=(inp&&inp.value||'').trim(); if(!v) return;
+  storeFlags(STORES[idx])[fid]={note:v,by:currentMgr,at:Date.now()}; apiFlag(STORES[idx],fid,v); renderReview(); renderDash(); }
+function clearFlag(idx,fid){ const s=STORES[idx]; if(s.flags) delete s.flags[fid]; apiUnflag(s,fid); renderReview(); renderDash(); }
+function flagCount(s){ return s.flags?Object.keys(s.flags).length:0; }
+function flagItemHTML(idx,it){ const s=STORES[idx]; const fl=s.flags&&s.flags[it.id];
+  if(fl) return '<div class="flagged"><i>⚑</i> <b>Flagged for store:</b> '+fl.note.replace(/</g,'&lt;')+' <button class="linkbtn" onclick="clearFlag('+idx+',\''+it.id+'\')">clear</button></div>';
+  return '<button class="linkbtn flagbtn" onclick="toggleFlagBox('+idx+',\''+it.id+'\')">⚑ Flag for store</button>'+
+    '<div class="flagbox" id="fb_'+idx+'_'+it.id+'" style="display:none"><input id="fi_'+idx+'_'+it.id+'" placeholder="What must the store fix?"><button class="btn btn-primary" style="padding:5px 12px;font-size:12px" onclick="sendFlag('+idx+',\''+it.id+'\')">Send</button></div>'; }
+/* ---- per-question freshness (24h threshold) ---- */
+const STALE_MS=24*3600*1000;
+function editedAnswers(s){ if(!s.data)return []; const out=[];
+  SCHEMA.forEach(c=>c.f.forEach(f=>{const v=s.data[f.id]; if(v&&v.ts) out.push({f,ts:v.ts,label:fieldStat(s,f).label});}));
+  return out; }
+function updateStoreMeter(){const p=storeStats(STORES[current]).pct,el=document.getElementById('storepct');el.textContent=pctTxt(p);el.style.color=color(p);}
+function jumpUnfinished(){const s=STORES[current];
+  for(let ci=0;ci<SCHEMA.length;ci++){ if(SCHEMA[ci].f.some(f=>{const r=fieldStat(s,f);return r.app&&!r.done;})){
+    openCats.add(ci);loadStore();const el=document.querySelector('.acc[data-ci="'+ci+'"]');if(el&&el.scrollIntoView)el.scrollIntoView({behavior:'smooth',block:'start'});return; }}}
+const AUDIT=[];
+function showToast(msg,bg,ms){ const t=document.getElementById('toast'); t.textContent=msg; t.style.background=bg; t.classList.add('show');
+  if(ms){ clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),ms); } }
+async function saveStore(){const s=STORES[current];s.updatedAt=Date.now();s.updatedBy=s.name+" (store)";
+  AUDIT.push({store:s.name,at:s.updatedAt,pct:Math.round(storeStats(s).pct*100)});
+  s.review=null;                 // a store edit invalidates any prior manager sign-off
+  renderDash();                  // optimistic: local view updates instantly
+  const hint=document.getElementById('savedhint');
+  if(!apiOn()){ hint.textContent='Saved (demo mode).'; hint.style.color='var(--muted)'; showToast('Saved (demo)','var(--grey)',1800); return; }
+  hint.textContent='Saving… pushing to the dashboard'; hint.style.color='var(--muted)';
+  showToast('⏳ Saving… pushing to the dashboard','var(--brand)',0);   // stays until result
+  const res=await apiSaveConfirm(s);
+  renderDash();
+  if(res==='ok'){ hint.textContent='✓ Confirmed — your data is pushed & published to the dashboard.'; hint.style.color='var(--green)';
+    showToast('✓ Data pushed & published to the dashboard','var(--green)',2600); }
+  else { hint.textContent='⚠ NOT confirmed — your data may not have reached the dashboard. Please press Save again.'; hint.style.color='var(--red)';
+    showToast('⚠ Not confirmed — please press Save again','var(--red)',4000); }
+}
+
+/* ===================== ONE-PAGER ===================== */
+function openOP(idx){const s=STORES[idx],st=storeStats(s);
+  const cats=SCHEMA.map((c,ci)=>{const cs=s.data?catStat(s,ci):{pct:null};const pc=cs.pct==null?'var(--grey)':color(cs.pct);
+    return '<div class="opcat"><span class="qdot" style="background:'+pc+'"></span><span class="cn">'+c.n+'</span><span class="cpct" style="color:'+pc+'">'+(cs.pct==null?'—':pctTxt(cs.pct))+'</span></div>';}).join('');
+  const detail = !s.updatedAt ? '<div class="drillbox muted">Store has not submitted yet.</div>' : fullDetailHTML(s);
+  const rc=st.filled?color(st.pct):'var(--grey)';
+  document.getElementById('opsheet').innerHTML='<div class="ophead"><div class="t"><h2>'+s.name+'</h2><div class="meta">Cluster Manager: <b>'+s.mgr+'</b> · '+(st.filled?('Last saved '+fmtAgo(s.updatedAt)):'Not yet submitted')+'</div></div><div style="text-align:right"><div class="big" style="color:'+rc+'">'+(st.filled?pctTxt(st.pct):'—')+'</div><div class="muted" style="font-size:11px">'+(st.filled?(st.done+' of '+st.app+' done · '+st.pending+' pending'):'')+'</div></div><button class="opclose" onclick="closeOP()">✕</button></div><div class="opbody"><div class="opgrid">'+cats+'</div><div class="opdetail"><h4>Complete checklist detail</h4>'+detail+'</div></div><div class="opfoot"><button class="btn btn-ghost" onclick="closeOP()">Close</button><button class="btn btn-primary" onclick="window.print()">Print / PDF</button></div>';
+  document.getElementById('overlay').classList.add('show');}
+// full per-question detail: every question + its answer, remark, and freshness
+function fullDetailHTML(s){
+  return SCHEMA.map((c,ci)=>{
+    const cs=catStat(s,ci);
+    const rows=c.f.map(f=>{
+      const hidden=gateNA(s,f)||showIfNA(s,f);
+      const r=fieldStat(s,f);
+      const v=s.data?s.data[f.id]:null;
+      const dot=hidden?'var(--grey)':(r.done?'var(--green)':(r.app?'var(--amber)':'var(--grey)'));
+      const ans=hidden?'N/A':(r.label||'—');
+      const stale=v&&v.ts&&(Date.now()-v.ts>STALE_MS);
+      const edited=(v&&v.ts)?'<span class="opedit'+(stale?' stale':'')+'">'+fmtAgo(v.ts)+'</span>':'';
+      const remark=(v&&v.remark)?'<div class="opremark">📝 '+v.remark+'</div>':'';
+      return '<div class="opq"><div class="opqtop"><span class="dot" style="background:'+dot+'"></span><span class="opqn">'+f.q+'</span><span class="opqa">'+ans+'</span>'+edited+'</div>'+remark+'</div>';
+    }).join('');
+    return '<div class="opsec"><div class="opsech">'+c.n+'<span style="color:'+color(cs.pct||0)+'">'+(cs.pct==null?'—':pctTxt(cs.pct))+'</span></div>'+rows+'</div>';
+  }).join('');
+}
+function closeOP(){document.getElementById('overlay').classList.remove('show');}
+
+/* ===================== MANAGER REVIEW ===================== */
+const PASSCODES={"Yasir Siddiqui":"QL4Z2T9","Ali Hyder":"WEVR49H","Imran Azeem":"49F2LYG","Abdul Rehman":"62USQCB","Muhammad Usman Yousaf":"U6Z5MH9","Usman Saeed":"B5YQZE3","Franchise":"DJM8MU3"};
+let currentMgr=null;
+function initDemoPass(){/* codes are confidential — no on-screen hint */}
+function unlockReview(){const code=document.getElementById('pass').value.trim();const mgr=Object.keys(PASSCODES).find(m=>PASSCODES[m]===code);
+  if(!mgr){document.getElementById('gateerr').textContent='Incorrect passcode';return;}
+  currentMgr=mgr;document.getElementById('gateerr').textContent='';document.getElementById('pass').value='';
+  document.getElementById('reviewgate').style.display='none';document.getElementById('reviewpanel').style.display='block';
+  document.getElementById('whoami').textContent=mgr;renderReview();}
+function lockReview(){currentMgr=null;document.getElementById('reviewpanel').style.display='none';document.getElementById('reviewgate').style.display='block';}
+function dataHash(s){if(!s.data)return '';return SCHEMA.flatMap(c=>c.f).map(f=>JSON.stringify(s.data[f.id])).join('|');}
+function reviewState(s){if(!s.review)return 'await';return s.review.hash===dataHash(s)?'done':'stale';}
+function renderReview(){const mine=STORES.map((s,idx)=>({s,idx})).filter(o=>o.s.mgr===currentMgr);
+  document.getElementById('revcount').textContent='· '+mine.length+' stores assigned to you';
+  document.getElementById('reviewcards').innerHTML=mine.map(({s,idx})=>{
+    const st=storeStats(s),state=reviewState(s),draft=(s.reviewDraft=s.reviewDraft||{});
+    const badge=!s.updatedAt?'<span class="revstatus rs-stale">Store not started</span>':state==='done'?'<span class="revstatus rs-done">✓ Signed off · '+fmtAgo(s.review.at)+'</span>':state==='stale'?'<span class="revstatus rs-stale">Store changed — re-review</span>':'<span class="revstatus rs-await">Awaiting your review</span>';
+    const cats=SCHEMA.map((c,ci)=>{const cs=s.data?catStat(s,ci):{pct:null,done:0,app:0};
+      const checked=state==='done'?s.review.cats.includes(c.n):!!draft[c.n];
+      return '<div class="revcat"><div class="tick '+(checked?'on':'')+'" onclick="toggleReviewCat('+idx+',\''+c.n.replace(/'/g,"\\'")+'\')">'+(checked?'✓':'')+'</div><span class="cn">'+c.n+'</span><span class="cst">'+cs.done+'/'+cs.app+' done</span><span class="cpc" style="color:'+color(cs.pct||0)+'">'+(cs.pct==null?'—':pctTxt(cs.pct))+'</span></div>';}).join('');
+    const confirmed=state==='done'?s.review.cats.length:Object.values(draft).filter(Boolean).length;
+    const foot=state==='done'?'<span class="signed">Signed off by '+s.review.by+' · '+fmtAgo(s.review.at)+(s.review.note?(' · “'+s.review.note+'”'):'')+'</span><button class="btn btn-ghost" style="margin-left:auto" onclick="unsign('+idx+')">Undo sign-off</button>':
+      '<span class="prog">'+confirmed+' / '+SCHEMA.length+' categories confirmed</span><input class="revnote" id="note'+idx+'" placeholder="Optional note"><button class="btn btn-primary" onclick="signOff('+idx+')" '+(s.updatedAt?'':'disabled')+'>Confirm &amp; sign off</button>';
+    const pend=s.updatedAt?pendingByCat(s):[];
+    const pendCount=pend.reduce((a,p)=>a+p.items.length,0);
+    let pendBlock;
+    if(!s.updatedAt) pendBlock='<div class="revpend"><div class="muted" style="font-size:12px;padding:2px 2px">Nothing to review yet — store has not submitted.</div></div>';
+    else if(!pendCount) pendBlock='<div class="revpend"><div style="font-size:12px;color:var(--green);font-weight:600">✓ Nothing pending — all applicable items complete.</div></div>';
+    else pendBlock='<div class="revpend"><button class="revtoggle" onclick="togglePend('+idx+')"><span id="rpc'+idx+'">▸</span> What\'s pending to review ('+pendCount+' item'+(pendCount>1?'s':'')+')</button>'+
+      '<div id="rpend'+idx+'" style="display:none;margin-top:8px"><div class="dcats">'+pend.map(p=>'<div class="dcat"><div class="dch">'+p.cat+' <span class="muted">('+p.items.length+')</span></div>'+p.items.map(it=>'<div class="ditem"><span class="dot" style="background:var(--amber)"></span><div style="flex:1">'+it.q+' <span class="dstat">'+it.label+'</span>'+(it.remark?'<div class="muted" style="font-size:11px">📝 '+it.remark+'</div>':'')+flagItemHTML(idx,it)+'</div></div>').join('')+'</div>').join('')+'</div></div></div>';
+    // per-question freshness (24h)
+    const ed=editedAnswers(s); const stale=ed.filter(x=>Date.now()-x.ts>STALE_MS);
+    let freshBlock='';
+    if(s.updatedAt){
+      if(!ed.length) freshBlock='<div class="revfresh"><span class="muted">No individual answers recorded yet.</span></div>';
+      else if(!stale.length){ const oldest=Math.min.apply(null,ed.map(x=>x.ts));
+        freshBlock='<div class="revfresh ok">✓ All '+ed.length+' answers refreshed within 24h (oldest '+fmtAgo(oldest)+')</div>'; }
+      else freshBlock='<div class="revfresh warn"><button class="revtoggle" style="color:var(--red)" onclick="toggleStale('+idx+')"><span id="stc'+idx+'">▸</span> ⚠ '+stale.length+' answer'+(stale.length>1?'s':'')+' not updated in 24h+ — re-confirm before sign-off</button>'+
+        '<div id="stale'+idx+'" style="display:none;margin-top:8px">'+stale.sort((a,b)=>a.ts-b.ts).map(x=>'<div class="ditem"><span class="dot" style="background:var(--red)"></span><div>'+x.f.q+' <span class="dstat">'+x.label+'</span> <span class="muted" style="font-size:11px">· edited '+fmtAgo(x.ts)+'</span></div></div>').join('')+'</div></div>';
+    }
+    return '<div class="revcard card"><div class="revhead"><span class="rn">'+s.name+'</span><span class="rp" style="color:'+color(st.pct)+'">'+(st.filled?pctTxt(st.pct)+' ready':'not started')+'</span>'+badge+'</div><div class="revbody">'+cats+pendBlock+freshBlock+'</div><div class="revfoot">'+foot+'</div></div>';
+  }).join('');}
+function togglePend(idx){const d=document.getElementById('rpend'+idx),e=document.getElementById('rpc'+idx);if(!d)return;const o=d.style.display==='none';d.style.display=o?'block':'none';if(e)e.textContent=o?'▾':'▸';}
+function toggleStale(idx){const d=document.getElementById('stale'+idx),e=document.getElementById('stc'+idx);if(!d)return;const o=d.style.display==='none';d.style.display=o?'block':'none';if(e)e.textContent=o?'▾':'▸';}
+function toggleReviewCat(idx,cat){const s=STORES[idx];if(reviewState(s)==='done')return;s.reviewDraft=s.reviewDraft||{};s.reviewDraft[cat]=!s.reviewDraft[cat];renderReview();}
+function signOff(idx){const s=STORES[idx];if(!s.updatedAt)return;const draft=s.reviewDraft||{};const cats=SCHEMA.map(c=>c.n).filter(n=>draft[n]);
+  const note=(document.getElementById('note'+idx)||{}).value||'';s.review={by:currentMgr,at:Date.now(),cats,note,hash:dataHash(s)};apiSaveReview(s);renderReview();renderDash();}
+function unsign(idx){STORES[idx].review=null;apiSaveReview(STORES[idx]);renderReview();renderDash();}
+
+/* ===================== Google Sheet sync (no-op in local mode) ===================== */
+function apiOn(){ return !!CONFIG.API_URL; }
+async function apiLoad(){
+  if(!apiOn()) return false;
+  try{
+    const res=await fetch(CONFIG.API_URL,{method:'GET'});
+    const rows=await res.json();
+    const byName={}; rows.forEach(r=>byName[r.store]=r);
+    STORES.forEach(s=>{ const r=byName[s.name]; if(r){
+      s.data=r.data||null; s.updatedAt=r.updatedAt||null; s.updatedBy=r.updatedBy||null; s.review=r.review||null; s.flags=r.flags||{};
+    }});
+    return true;
+  }catch(err){ console.warn('Sheet load failed:',err); return false; }
+}
+function apiPost(payload){
+  return fetch(CONFIG.API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)});
+}
+// VERIFIED save: 'local' | 'ok' | 'unconfirmed'
+// Writes, then reads the sheet back and checks THIS store's row actually updated
+// (read-back works cross-origin, so this is a real confirmation, not a guess).
+// Save NEVER writes flags — flags are single-key merges only.
+async function verifyBySheet(s,myTs){
+  try{ const g=await fetch(CONFIG.API_URL,{method:'GET'}); const rows=await g.json();
+    const row=rows.find(r=>r.store===s.name);
+    return (row && row.updatedAt && row.updatedAt >= myTs-3000) ? 'ok' : 'unconfirmed';
+  }catch(e){ return 'unconfirmed'; }
+}
+async function apiSaveConfirm(s){
+  if(!apiOn()) return 'local';
+  const st=storeStats(s); const myTs=s.updatedAt;
+  try{
+    const res=await apiPost({type:'save',store:s.name,mgr:s.mgr,updatedAt:s.updatedAt,updatedBy:s.updatedBy,
+      pct:Math.round(st.pct*100),pending:st.pending,data:s.data});
+    try{ const j=await res.json(); if(j&&j.ok) return 'ok'; }catch(e){}   // FAST path: read the write's own reply
+    return await verifyBySheet(s,myTs);                                     // fallback: read the sheet back
+  }catch(err){ console.warn('Sheet save failed, verifying:',err); return await verifyBySheet(s,myTs); }
+}
+// per-item flag merges — cannot clobber each other or a concurrent save
+function apiFlag(s,fid,note){ if(!apiOn())return; apiPost({type:'flag',store:s.name,fieldId:fid,note:note,by:currentMgr}).catch(e=>console.warn('flag failed',e)); }
+function apiUnflag(s,fid){ if(!apiOn())return; apiPost({type:'unflag',store:s.name,fieldId:fid}).catch(e=>console.warn('unflag failed',e)); }
+function apiSaveReview(s){
+  if(!apiOn()) return;
+  fetch(CONFIG.API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify({type:'review',store:s.name,review:s.review})
+  }).catch(err=>console.warn('Sheet review save failed:',err));
+}
+function setModePill(){
+  const p=document.querySelector('.demo-pill'); if(!p) return;
+  p.textContent = apiOn() ? '● Live Dashboard' : '● Demo mode · data in this browser only';
+}
+let lastSync=null, syncing=false;
+function updateSyncLabel(){ const el=document.getElementById('syncinfo'); if(!el) return;
+  el.textContent = !apiOn() ? '' : syncing ? 'updating…' : (lastSync ? ('Auto-updates every minute · updated '+fmtAgo(lastSync)) : 'Auto-updates every minute'); }
+function renderMonitor(){ if(currentView==='dash')renderDash(); else if(currentView==='summary')renderSummary(); else if(currentView==='damages')renderDamages(); }
+function manualSync(){ if(!apiOn()){renderMonitor();return;} syncing=true;updateSyncLabel();
+  apiLoad().then(()=>{ lastSync=Date.now(); syncing=false; renderMonitor(); updateSyncLabel(); }); }
+// auto-refresh the monitoring views (dashboard / regional insight / damages) so they stay current
+setInterval(()=>{ if(!apiOn()||syncing) return;
+  if(currentView==='dash'||currentView==='summary'||currentView==='damages'){ syncing=true;updateSyncLabel();
+    apiLoad().then(()=>{ lastSync=Date.now(); syncing=false; renderMonitor(); updateSyncLabel(); }); }
+}, 30000);
+
+/* ===================== REVIEW SUMMARY (per-manager sign-off rollup) ===================== */
+function renderSummary(){
+  const mgrs=[...new Set(STORES.map(s=>s.mgr))].sort();
+  let T={total:0,done:0,await:0,stale:0,ns:0};
+  const rows=mgrs.map(m=>{
+    const list=STORES.filter(s=>s.mgr===m);
+    let done=0,aw=0,stale=0,ns=0;
+    list.forEach(s=>{ if(!s.updatedAt){ns++;return;} const st=reviewState(s);
+      if(st==='done')done++; else if(st==='stale')stale++; else aw++; });
+    T.total+=list.length;T.done+=done;T.await+=aw;T.stale+=stale;T.ns+=ns;
+    return {m,total:list.length,done,aw,stale,ns,pct:list.length?done/list.length:0};
+  }).sort((a,b)=>a.pct-b.pct);   // least reviewed first
+  document.getElementById('sumkpis').innerHTML=[
+    kpi('Signed Off',T.done+' / '+T.total,'stores reviewed & confirmed',color(T.total?T.done/T.total:0)),
+    kpi('Awaiting Review',T.await,'submitted, not signed off',T.await?'var(--amber)':'var(--green)'),
+    kpi('Re-review',T.stale,'changed after sign-off',T.stale?'var(--red)':'var(--green)'),
+    kpi('Not Submitted',T.ns,'store hasn’t filled yet',T.ns?'var(--red)':'var(--green)')
+  ].join('');
+  const rowHTML=r=>{const c=color(r.pct);
+    return '<td>'+r.m+'</td><td class="num">'+r.total+'</td>'+
+      '<td class="num" style="color:var(--green);font-weight:700">'+r.done+'</td>'+
+      '<td class="num" style="color:'+(r.aw?'var(--amber)':'var(--muted)')+'">'+r.aw+'</td>'+
+      '<td class="num" style="color:'+(r.stale?'var(--red)':'var(--muted)')+';font-weight:'+(r.stale?700:400)+'">'+r.stale+'</td>'+
+      '<td class="num" style="color:'+(r.ns?'var(--red)':'var(--muted)')+'">'+r.ns+'</td>'+
+      '<td><span class="minibar"><i style="width:'+(r.pct*100)+'%;background:'+c+'"></i></span><b class="pct" style="color:'+c+'">'+pctTxt(r.pct)+'</b></td>';};
+  const body=rows.map(r=>'<tr>'+rowHTML(r)+'</tr>').join('');
+  const totPct=T.total?T.done/T.total:0;
+  const totRow='<tr style="border-top:2px solid var(--line);font-weight:700"><td>ALL ('+mgrs.length+' managers)</td><td class="num">'+T.total+'</td><td class="num" style="color:var(--green)">'+T.done+'</td><td class="num">'+T.await+'</td><td class="num">'+T.stale+'</td><td class="num">'+T.ns+'</td><td><span class="minibar"><i style="width:'+(totPct*100)+'%;background:'+color(totPct)+'"></i></span><b class="pct" style="color:'+color(totPct)+'">'+pctTxt(totPct)+'</b></td></tr>';
+  document.getElementById('sumtbody').innerHTML=body+totRow;
+}
+
+/* ===================== DAMAGES INSIGHT (store-wise, by issue type) ===================== */
+function renderDamages(){
+  const fid=dmgFieldId();
+  // dynamic header: Store | Cluster Manager | <each issue type> | Total units | Total value
+  document.getElementById('dmghead').innerHTML='<th>Store</th><th>Cluster Manager</th>'+
+    ISSUE_TYPES.map(it=>'<th class="num">'+it+'</th>').join('')+'<th class="num">Total units</th><th class="num">Total value (PKR)</th>';
+  const rows=STORES.map(s=>{
+    const lines=(fid && s.data && s.data[fid] && s.data[fid].lines)||[];
+    const t=dmgTotals(lines);
+    return {name:s.name,mgr:s.mgr, byType:t.byType, units:t.units, value:t.value};
+  }).filter(r=>r.units>0).sort((a,b)=>b.value-a.value);
+  const T={byType:{},units:0,value:0}; ISSUE_TYPES.forEach(it=>T.byType[it]=0);
+  rows.forEach(r=>{ ISSUE_TYPES.forEach(it=>T.byType[it]+=(r.byType[it]||0)); T.units+=r.units; T.value+=r.value; });
+  document.getElementById('dmgkpis').innerHTML=[
+    kpi('Total Damage Units',T.units.toLocaleString(),'across all stores','var(--red)'),
+    kpi('Total Value','PKR '+T.value.toLocaleString(),'Qty × Retail price','var(--red)'),
+    kpi('Stores Reporting',rows.length,'with logged damages',rows.length?'var(--amber)':'var(--green)')
+  ].join('');
+  document.getElementById('dmgcount').textContent=rows.length+' store'+(rows.length===1?'':'s')+' reporting';
+  const ncol=ISSUE_TYPES.length+4;
+  const body=rows.map(r=>'<tr><td>'+r.name+'</td><td>'+r.mgr+'</td>'+
+    ISSUE_TYPES.map(it=>'<td class="num">'+(r.byType[it]||0)+'</td>').join('')+
+    '<td class="num"><b>'+r.units+'</b></td><td class="num" style="color:var(--red)">'+r.value.toLocaleString()+'</td></tr>').join('');
+  const totRow=rows.length?'<tr style="border-top:2px solid var(--line);font-weight:700"><td>ALL STORES</td><td></td>'+
+    ISSUE_TYPES.map(it=>'<td class="num">'+T.byType[it]+'</td>').join('')+
+    '<td class="num">'+T.units+'</td><td class="num" style="color:var(--red)">'+T.value.toLocaleString()+'</td></tr>':'';
+  document.getElementById('dmgtbody').innerHTML=(body+totRow)||'<tr><td colspan="'+ncol+'" class="muted" style="padding:14px">No damages logged yet.</td></tr>';
+}
+
+/* ===================== nav / init ===================== */
+let currentView='dash';
+function show(v){currentView=v;document.querySelectorAll('.view').forEach(e=>e.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  ['dash','entry','review','summary','damages'].forEach(t=>document.getElementById('tab-'+t).classList.toggle('active',t===v));
+  if(v==='dash'){renderDash();updateSyncLabel();} if(v==='review'&&currentMgr)renderReview(); if(v==='summary')renderSummary(); if(v==='damages')renderDamages();}
+buildLens();buildPicker();loadStore();renderDash();initDemoPass();setModePill();
+if(apiOn()){ apiLoad().then(ok=>{ lastSync=Date.now(); if(ok){ renderDash(); if(currentMgr)renderReview(); if(currentView==='summary')renderSummary(); } updateSyncLabel(); }); }
+</script>
+</body>
+</html>
