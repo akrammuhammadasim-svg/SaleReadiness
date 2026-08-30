@@ -204,6 +204,16 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 .opclose{background:var(--greybg);border:0;border-radius:8px;width:32px;height:32px;font-size:16px;cursor:pointer;color:var(--ink)}
 .opfoot{padding:14px 22px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end}
 .oppend{margin-top:16px}.oppend h4{margin:0 0 8px;font-size:13px}
+.catbar.clickable{cursor:pointer;border-radius:8px;padding:2px 4px;margin-left:-4px;margin-right:-4px}
+.catbar.clickable:hover{background:var(--greybg)}
+.mxhint{color:var(--brand2);font-weight:700}
+.mxscroll{overflow:auto;max-height:68vh;border:1px solid var(--line);border-radius:10px}
+.mxtbl{border-collapse:collapse;font-size:12px;white-space:nowrap}
+.mxtbl th{position:sticky;top:0;background:var(--panel);font-size:10.5px;text-transform:uppercase;letter-spacing:.3px;color:var(--muted);font-weight:700;text-align:left;padding:7px 10px;border-bottom:1px solid var(--line)}
+.mxtbl td{padding:6px 10px;border-bottom:1px solid var(--line)}
+.mxtbl .mxstore{position:sticky;left:0;background:var(--panel);font-weight:600;z-index:1;box-shadow:1px 0 0 var(--line)}
+.mxtbl th.mxstore{z-index:3;top:0}
+.sopill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
 .opdetail{margin-top:18px}.opdetail h4{margin:0 0 10px;font-size:13px}
 .opsec{margin-bottom:14px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
 .opsech{display:flex;justify-content:space-between;align-items:center;background:var(--greybg);padding:8px 12px;font-weight:700;font-size:12.5px}
@@ -366,8 +376,8 @@ const STORES=[
 {name:"Giga Mall WTC, Rawalpindi",mgr:"Muhammad Usman Yousaf"},{name:"Gujranwala Rahwali Store",mgr:"Usman Saeed"},
 {name:"Gulberg II, Lahore",mgr:"Yasir Siddiqui"},{name:"Gulgasht Colony, Multan",mgr:"Ali Hyder"},
 {name:"Atrium Mall Sadar",mgr:"Imran Azeem"},{name:"Autobahn Road, Hyderabad",mgr:"Imran Azeem"},
-{name:"Jaranwala Road, Faisalabad",mgr:"Yasir Siddiqui"},{name:"Jhangg Store",mgr:"Franchise"},
-{name:"Jhangi Chowk, Abbottabad",mgr:"Abdul Rehman"},{name:"Dolmen Mall Hyderi",mgr:"Imran Azeem"},
+{name:"Jaranwala Road, Faisalabad",mgr:"Yasir Siddiqui"},
+{name:"Jhangi Chowk, Abbottabad",mgr:"Abdul Rehman"},
 {name:"Kutchery Road, Gujrat",mgr:"Usman Saeed"},{name:"Lake City Mall, Lahore",mgr:"Ali Hyder"},
 {name:"Layalpur Galleria, Faisalabad",mgr:"Yasir Siddiqui"},{name:"Packages Mall, Lahore",mgr:"Ali Hyder"},
 {name:"Pindi Saddar, Rawalpindi",mgr:"Muhammad Usman Yousaf"},{name:"PWD Islamabad Store",mgr:"Muhammad Usman Yousaf"},
@@ -421,7 +431,7 @@ const SCHEMA=[
   st("All TOs Closed & Updated in D365",O_STD)
 ]},
 {n:"2. NOS & Vehicle",f:[
-  yn("NOS Vehicle Required",{remarkOn:'Yes'}),
+  yn("NOS Vehicle Required",{remarkOn:'Yes',confirm:true}),
   num("No. of Days",null,{showIf:{q:"NOS Vehicle Required",val:'Yes'}})
 ]},
 {n:"3. NTI's & Cash Counter",f:[
@@ -437,9 +447,9 @@ const SCHEMA=[
   time("Day 1 — Opening / Closing"),time("Day 2 — Opening / Closing"),time("Day 3 — Opening / Closing"),
   time("Day 4 — Opening / Closing"),time("Day 5 — Opening / Closing"),
   st("Mall Acknowledgement — Early Opening",O_MALL),
-  yn("Men's Entry Allowed — Day 1",{noRemark:true}),yn("Men's Entry Allowed — Day 2",{noRemark:true}),
-  yn("Men's Entry Allowed — Day 3",{noRemark:true}),yn("Men's Entry Allowed — Day 4",{noRemark:true}),
-  yn("Men's Entry Allowed — Day 5",{noRemark:true})
+  yn("Men's Entry Allowed — Day 1",{noRemark:true,confirm:true}),yn("Men's Entry Allowed — Day 2",{noRemark:true,confirm:true}),
+  yn("Men's Entry Allowed — Day 3",{noRemark:true,confirm:true}),yn("Men's Entry Allowed — Day 4",{noRemark:true,confirm:true}),
+  yn("Men's Entry Allowed — Day 5",{noRemark:true,confirm:true})
 ]},
 {n:"6. Branding & Signage",f:[
   st("Branding Completion",O_STD),
@@ -591,8 +601,8 @@ function seed(){ STORES.forEach(s=>{ s.data=null; s.updatedAt=null; s.updatedBy=
 seed();
 function fmtAgo(t){ if(!t)return "—"; const m=(Date.now()-t)/60000;
   if(m<1)return "just now"; if(m<60)return Math.round(m)+"m ago"; return Math.round(m/60)+"h ago"; }
-function color(p){return p>=.85?'var(--green)':p>=.8?'var(--amber)':'var(--red)';}      // <80% = red (At Risk)
-function badgeClass(p){return p>=.85?'b-green':p>=.8?'b-amber':'b-red';}
+function color(p){return p>=.95?'var(--green)':p>=.8?'var(--amber)':'var(--red)';}      // ≥95% green (Ready), 80–95% amber, <80% red (At Risk)
+function badgeClass(p){return p>=.95?'b-green':p>=.8?'b-amber':'b-red';}
 function pctTxt(p){return Math.round(p*100)+'%';}
 function avg(a){return a.length?a.reduce((x,y)=>x+y,0)/a.length:0;}
 
@@ -606,12 +616,12 @@ function setLens(v){lens=v;renderDash();document.getElementById('lensnote').text
 function renderDash(){
   const scope=scopeStores(); const stats=scope.map(s=>({s,...storeStats(s)}));
   const overall=avg(stats.map(x=>x.pct)), N=scope.length;
-  const ready=stats.filter(x=>x.pct>=.85).length, notStarted=stats.filter(x=>!x.filled).length;
+  const ready=stats.filter(x=>x.pct>=.95).length, notStarted=stats.filter(x=>!x.filled).length;
   const atrisk=stats.filter(x=>x.filled&&x.pct<.8).length, pend=stats.reduce((a,x)=>a+x.pending,0);
   const signedOff=stats.filter(x=>reviewState(x.s)==='done').length;
   document.getElementById('kpis').innerHTML=[
     kpi('Overall Readiness',pctTxt(overall),(N-notStarted)+' of '+N+' filled',color(overall)),
-    kpi('Stores Ready',ready+' / '+N,'at ≥85%',color(N?ready/N:0)),
+    kpi('Stores Ready',ready+' / '+N,'at ≥95%',color(N?ready/N:0)),
     kpi('Mgr Signed Off',signedOff+' / '+N,'reviewed',color(N?signedOff/N:0)),
     kpi('Not Started',notStarted,'never submitted',notStarted?'var(--red)':'var(--green)'),
     kpi('At Risk',atrisk,'below 80%','var(--red)'),
@@ -619,7 +629,7 @@ function renderDash(){
   ].join('');
   document.getElementById('catbars').innerHTML=SCHEMA.map((c,ci)=>{
     const ps=scope.map(s=>s.data?catStat(s,ci).pct:null).filter(v=>v!=null); const p=avg(ps);
-    return '<div class="catbar"><div class="top"><b>'+c.n+'</b><span class="pct" style="color:'+color(p)+'">'+pctTxt(p)+'</span></div><div class="track"><div class="fill" style="width:'+(p*100)+'%;background:'+color(p)+'"></div></div></div>';
+    return '<div class="catbar clickable" onclick="openCategoryMatrix('+ci+')" title="Click for store-wise detail"><div class="top"><b>'+c.n+' <span class="mxhint">›</span></b><span class="pct" style="color:'+color(p)+'">'+pctTxt(p)+'</span></div><div class="track"><div class="fill" style="width:'+(p*100)+'%;background:'+color(p)+'"></div></div></div>';
   }).join('');
   const regs={}; stats.forEach(x=>{(regs[x.s.mgr]=regs[x.s.mgr]||[]).push(x.pct);});
   document.getElementById('regionchips').innerHTML=Object.keys(regs).sort().map(r=>{const p=avg(regs[r]);
@@ -638,7 +648,7 @@ function renderTable(){
   document.getElementById('storecount').textContent='('+rows.length+' shown)';
   document.getElementById('storetbody').innerHTML=rows.map(r=>{
     const c=color(r.pct);
-    const sb=!r.filled?'<span class="badge b-red">Not Started</span>':r.pct>=.85?'<span class="badge b-green">Ready</span>':r.pct>=.8?'<span class="badge b-amber">On Track</span>':'<span class="badge b-red">At Risk</span>';
+    const sb=!r.filled?'<span class="badge b-red">Not Started</span>':r.pct>=.95?'<span class="badge b-green">Ready</span>':r.pct>=.8?'<span class="badge b-amber">On Track</span>':'<span class="badge b-red">At Risk</span>';
     const rc=r.filled?'<span class="minibar"><i style="width:'+(r.pct*100)+'%;background:'+c+'"></i></span><b class="pct" style="color:'+c+'">'+pctTxt(r.pct)+'</b>':'<span class="muted">—</span>';
     const main='<tr class="strow" onclick="toggleDrill('+r.idx+')"><td><span class="exp" id="exp'+r.idx+'">▸</span> '+r.name+' &nbsp;<span class="op-link" onclick="event.stopPropagation();openOP('+r.idx+')">one-pager</span></td><td>'+r.mgr+'</td><td class="num">'+rc+'</td><td class="num">'+(r.filled?r.pending:'—')+'</td><td class="muted" style="font-size:11.5px">'+fmtAgo(r.updatedAt||null)+'</td><td>'+sb+'</td><td>'+reviewBadge(r.idx)+'</td></tr>';
     return main+'<tr class="drill" id="drill'+r.idx+'" style="display:none"><td colspan="7">'+drillHTML(r.idx)+'</td></tr>';
@@ -732,7 +742,7 @@ function renderField(s,f){
     (f.help?'<div class="qhelp">'+f.help+'</div>':'')+flagCallout+remark+'</div>';
 }
 /* ---- per-store password gate (real access codes; keyed by store name) ---- */
-const STORE_PASS={"Allama Iqbal Town, Lahore":"X5RVVRH","Ferozwatwan FOL, Sheikhpura":"2QNDCM9","Avenue Plaza, Bahawalpur":"MATXA5E","DMC, Karachi":"RP5D4YH","Blue Area, Swat":"HSV68XT","Centaurus Mall 2, Islamabad":"QT7WU3J","Centaurus Mall, Islamabad":"DQV6YSP","College Road, Sahiwal":"6VJKWA6","Lucky One Mall, Karachi":"EZTKVP5","Bahadurabad Store":"2HZEJNH","DMTR, Karachi":"CLSY5XC","Dolmen Mall Lahore":"7YNU3D3","Dolphin Chowk, Mirpur":"ZUGZE73","Emporium Mall, Lahore":"Z8A5J56","F-10, Islamabad":"5LS3JCA","UOL FOL, Lahore":"NGS5V5T","Giga Mall WTC, Rawalpindi":"3GWMSUB","Gujranwala Rahwali Store":"4Y3SFPN","Gulberg II, Lahore":"YZBLZ3U","Gulgasht Colony, Multan":"JY5EKSF","Atrium Mall Sadar":"7H9ULPF","Autobahn Road, Hyderabad":"WDYEPV8","Jaranwala Road, Faisalabad":"4Q2834Z","Jhangg Store":"PWEQ439","Jhangi Chowk, Abbottabad":"CB7W5YR","Dolmen Mall Hyderi":"4C2FBB8","Kutchery Road, Gujrat":"Z8R4R9J","Lake City Mall, Lahore":"7CBLX9Q","Layalpur Galleria, Faisalabad":"L2TUJVK","Packages Mall, Lahore":"CJ2NSBH","Pindi Saddar, Rawalpindi":"6296NRU","PWD Islamabad Store":"TJ23C4U","Rahim Yar Khan Store":"3C9ZSDJ","Safa Gold Mall, Islamabad":"2BKTSEX","Sargodha Road, Sheikhpura":"CKGPQU3","Sargodha Store":"Z6FCRYD","Satellite Town, Gujranwala":"S4A9LJ3","Square One Mall, Karachi":"4YKKWHY","S-Town, Rawalpindi":"Z76E8JP","University Road, Peshawar":"WBE24G4","V-Mall, Sialkot":"LYKHSL8","Wapda Town Lahore":"ZX3PT9C","Y-Block DHA, Lahore":"U5UWNVN","Mall of Pindi Saddar":"7T4UTVY","King Mall Gujranwala":"X8VGS4Q","Hyderi Bazar Largesse, Karachi":"NNX93ZS","Jail Road, Mandi Bahauddin-02":"4YBSW6X","Giga Boutique":"3DNNFT2","Bahria Town Lahore":"6HRYN37"};
+const STORE_PASS={"Allama Iqbal Town, Lahore":"X5RVVRH","Ferozwatwan FOL, Sheikhpura":"2QNDCM9","Avenue Plaza, Bahawalpur":"MATXA5E","DMC, Karachi":"RP5D4YH","Blue Area, Swat":"HSV68XT","Centaurus Mall 2, Islamabad":"QT7WU3J","Centaurus Mall, Islamabad":"DQV6YSP","College Road, Sahiwal":"6VJKWA6","Lucky One Mall, Karachi":"EZTKVP5","Bahadurabad Store":"2HZEJNH","DMTR, Karachi":"CLSY5XC","Dolmen Mall Lahore":"7YNU3D3","Dolphin Chowk, Mirpur":"ZUGZE73","Emporium Mall, Lahore":"Z8A5J56","F-10, Islamabad":"5LS3JCA","UOL FOL, Lahore":"NGS5V5T","Giga Mall WTC, Rawalpindi":"3GWMSUB","Gujranwala Rahwali Store":"4Y3SFPN","Gulberg II, Lahore":"YZBLZ3U","Gulgasht Colony, Multan":"JY5EKSF","Atrium Mall Sadar":"7H9ULPF","Autobahn Road, Hyderabad":"WDYEPV8","Jaranwala Road, Faisalabad":"4Q2834Z","Jhangi Chowk, Abbottabad":"CB7W5YR","Kutchery Road, Gujrat":"Z8R4R9J","Lake City Mall, Lahore":"7CBLX9Q","Layalpur Galleria, Faisalabad":"L2TUJVK","Packages Mall, Lahore":"CJ2NSBH","Pindi Saddar, Rawalpindi":"6296NRU","PWD Islamabad Store":"TJ23C4U","Rahim Yar Khan Store":"3C9ZSDJ","Safa Gold Mall, Islamabad":"2BKTSEX","Sargodha Road, Sheikhpura":"CKGPQU3","Sargodha Store":"Z6FCRYD","Satellite Town, Gujranwala":"S4A9LJ3","Square One Mall, Karachi":"4YKKWHY","S-Town, Rawalpindi":"Z76E8JP","University Road, Peshawar":"WBE24G4","V-Mall, Sialkot":"LYKHSL8","Wapda Town Lahore":"ZX3PT9C","Y-Block DHA, Lahore":"U5UWNVN","Mall of Pindi Saddar":"7T4UTVY","King Mall Gujranwala":"X8VGS4Q","Hyderi Bazar Largesse, Karachi":"NNX93ZS","Jail Road, Mandi Bahauddin-02":"4YBSW6X","Giga Boutique":"3DNNFT2","Bahria Town Lahore":"6HRYN37"};
 let unlockedStores=new Set();
 function loadStore(){
   current=+document.getElementById('storepick').value; const s=STORES[current];
@@ -789,9 +799,11 @@ function renderStoreGate(s){
     '<div class="muted" style="font-size:11px;margin-top:14px;line-height:1.6">Enter the access code issued to this store. Codes are confidential — do not share outside the store.</div>'+
     '</div>';
 }
+const MASTER_PASS="SAPPHIRE123456";               // HQ master key — unlocks any store & the review
+const MASTER_MGR="Master (all clusters)";
 function unlockStore(){
   const code=(document.getElementById('storepass').value||'').trim();
-  if(code!==STORE_PASS[STORES[current].name]){ document.getElementById('storegateerr').textContent='Incorrect password'; return; }
+  if(code!==STORE_PASS[STORES[current].name] && code!==MASTER_PASS){ document.getElementById('storegateerr').textContent='Incorrect password'; return; }
   unlockedStores.add(current); loadStore();
 }
 function lockStore(){ unlockedStores.delete(current); loadStore(); }
@@ -875,7 +887,54 @@ async function saveStore(){const s=STORES[current];s.updatedAt=Date.now();s.upda
 }
 
 /* ===================== ONE-PAGER ===================== */
-function openOP(idx){const s=STORES[idx],st=storeStats(s);
+// ===== category drill-down: store-wise matrix of actual answers =====
+function mxCell(s,f){
+  if(!s.updatedAt || !s.data) return {t:'—',c:'var(--muted)'};
+  if(gateNA(s,f)||showIfNA(s,f)) return {t:'N/A',c:'var(--grey)'};
+  const r=fieldStat(s,f);
+  const c=r.done?'var(--green)':(r.app?'var(--amber)':'var(--grey)');
+  return {t:(r.label||'—'),c};
+}
+function signoffInfo(s){
+  if(!s.updatedAt) return {t:'Not started',c:'var(--grey)',bg:'var(--greybg)',tx:'var(--muted)'};
+  const st=reviewState(s);
+  if(st==='done')  return {t:'✓ Signed off',c:'var(--green)',bg:'var(--greenbg)',tx:'var(--green)'};
+  if(st==='stale') return {t:'⚠ Re-review',c:'var(--red)',bg:'var(--redbg)',tx:'var(--red)'};
+  return {t:'Awaiting sign-off',c:'var(--amber)',bg:'var(--amberbg)',tx:'var(--amber)'};
+}
+function openCategoryMatrix(ci){
+  const c=SCHEMA[ci], fields=c.f;
+  const head='<th class="mxstore">Store</th><th>Cluster Manager</th><th>Cluster sign-off</th>'+fields.map(f=>'<th>'+f.q+'</th>').join('');
+  const rows=STORES.map(s=>{
+    const so=signoffInfo(s);
+    const cells=fields.map(f=>{const v=mxCell(s,f);return '<td style="color:'+v.c+'">'+v.t+'</td>';}).join('');
+    return '<tr><td class="mxstore" style="border-left:4px solid '+so.c+'">'+s.name+'</td><td class="muted" style="font-size:11px">'+s.mgr+'</td>'+
+      '<td><span class="sopill" style="background:'+so.bg+';color:'+so.tx+'">'+so.t+'</span></td>'+cells+'</tr>';
+  }).join('');
+  const sheet=document.getElementById('opsheet'); sheet.style.maxWidth='1150px';
+  sheet.innerHTML='<div class="ophead"><div class="t"><h2>'+c.n+' — store-wise</h2><div class="meta">Every store’s actual answer for this category. Store names stay pinned; scroll sideways for more questions.</div></div>'+
+    '<button class="btn btn-ghost" style="margin-left:auto" onclick="downloadCategoryCSV('+ci+')">⬇ CSV</button>'+
+    '<button class="opclose" onclick="closeOP()">✕</button></div>'+
+    '<div class="opbody"><div class="mxscroll"><table class="mxtbl"><thead><tr>'+head+'</tr></thead><tbody>'+rows+'</tbody></table></div></div>'+
+    '<div class="opfoot"><button class="btn btn-ghost" onclick="closeOP()">Close</button></div>';
+  document.getElementById('overlay').classList.add('show');
+}
+function downloadCategoryCSV(ci){
+  const p=window.prompt('Enter your password to download.\nMaster = all stores · a Cluster Manager code = only your stores:');
+  if(p===null) return;                          // cancelled
+  let stores, scopeTag='';
+  if(p===MASTER_PASS){ stores=STORES; }
+  else { const mgr=Object.keys(PASSCODES).find(m=>PASSCODES[m]===p);
+    if(!mgr){ alert('Incorrect password — download blocked.'); return; }
+    stores=STORES.filter(s=>s.mgr===mgr); scopeTag='_'+mgr.replace(/[^a-z0-9]+/gi,'_'); }
+  const c=SCHEMA[ci], fields=c.f, esc=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+  const lines=[['Store','Cluster Manager','Cluster sign-off'].concat(fields.map(f=>f.q)).map(esc).join(',')];
+  stores.forEach(s=>{ const row=[s.name,s.mgr,signoffInfo(s).t].concat(fields.map(f=>{const v=mxCell(s,f);return v.t==='—'?'':v.t;})); lines.push(row.map(esc).join(',')); });
+  try{ const blob=new Blob([lines.join('\n')],{type:'text/csv;charset=utf-8'}); const url=URL.createObjectURL(blob);
+    const a=document.createElement('a'); a.href=url; a.download=c.n.replace(/[^a-z0-9]+/gi,'_')+scopeTag+'_store_wise.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  }catch(e){ console.warn('CSV download failed',e); }
+}
+function openOP(idx){const s=STORES[idx],st=storeStats(s);document.getElementById('opsheet').style.maxWidth='820px';
   const cats=SCHEMA.map((c,ci)=>{const cs=s.data?catStat(s,ci):{pct:null};const pc=cs.pct==null?'var(--grey)':color(cs.pct);
     return '<div class="opcat"><span class="qdot" style="background:'+pc+'"></span><span class="cn">'+c.n+'</span><span class="cpct" style="color:'+pc+'">'+(cs.pct==null?'—':pctTxt(cs.pct))+'</span></div>';}).join('');
   const detail = !s.updatedAt ? '<div class="drillbox muted">Store has not submitted yet.</div>' : fullDetailHTML(s);
@@ -903,10 +962,11 @@ function fullDetailHTML(s){
 function closeOP(){document.getElementById('overlay').classList.remove('show');}
 
 /* ===================== MANAGER REVIEW ===================== */
-const PASSCODES={"Yasir Siddiqui":"QL4Z2T9","Ali Hyder":"WEVR49H","Imran Azeem":"49F2LYG","Abdul Rehman":"62USQCB","Muhammad Usman Yousaf":"U6Z5MH9","Usman Saeed":"B5YQZE3","Franchise":"DJM8MU3"};
+const PASSCODES={"Yasir Siddiqui":"QL4Z2T9","Ali Hyder":"WEVR49H","Imran Azeem":"49F2LYG","Abdul Rehman":"62USQCB","Muhammad Usman Yousaf":"U6Z5MH9","Usman Saeed":"B5YQZE3"};
 let currentMgr=null;
 function initDemoPass(){/* codes are confidential — no on-screen hint */}
-function unlockReview(){const code=document.getElementById('pass').value.trim();const mgr=Object.keys(PASSCODES).find(m=>PASSCODES[m]===code);
+function unlockReview(){const code=document.getElementById('pass').value.trim();
+  const mgr = code===MASTER_PASS ? MASTER_MGR : Object.keys(PASSCODES).find(m=>PASSCODES[m]===code);
   if(!mgr){document.getElementById('gateerr').textContent='Incorrect passcode';return;}
   currentMgr=mgr;document.getElementById('gateerr').textContent='';document.getElementById('pass').value='';
   document.getElementById('reviewgate').style.display='none';document.getElementById('reviewpanel').style.display='block';
@@ -914,8 +974,9 @@ function unlockReview(){const code=document.getElementById('pass').value.trim();
 function lockReview(){currentMgr=null;document.getElementById('reviewpanel').style.display='none';document.getElementById('reviewgate').style.display='block';}
 function dataHash(s){if(!s.data)return '';return SCHEMA.flatMap(c=>c.f).map(f=>JSON.stringify(s.data[f.id])).join('|');}
 function reviewState(s){if(!s.review)return 'await';return s.review.hash===dataHash(s)?'done':'stale';}
-function renderReview(){const mine=STORES.map((s,idx)=>({s,idx})).filter(o=>o.s.mgr===currentMgr);
-  document.getElementById('revcount').textContent='· '+mine.length+' stores assigned to you';
+function renderReview(){const master=currentMgr===MASTER_MGR;
+  const mine=STORES.map((s,idx)=>({s,idx})).filter(o=>master||o.s.mgr===currentMgr);
+  document.getElementById('revcount').textContent='· '+mine.length+(master?' stores (all clusters)':' stores assigned to you');
   document.getElementById('reviewcards').innerHTML=mine.map(({s,idx})=>{
     const st=storeStats(s),state=reviewState(s),draft=(s.reviewDraft=s.reviewDraft||{});
     const badge=!s.updatedAt?'<span class="revstatus rs-stale">Store not started</span>':state==='done'?'<span class="revstatus rs-done">✓ Signed off · '+fmtAgo(s.review.at)+'</span>':state==='stale'?'<span class="revstatus rs-stale">Store changed — re-review</span>':'<span class="revstatus rs-await">Awaiting your review</span>';
