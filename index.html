@@ -177,6 +177,35 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 .revcat .cn{flex:1;font-size:13px}
 .revcat .cpc{font-size:12px;font-weight:700;width:44px;text-align:right}
 .revcat .cst{font-size:11px;color:var(--muted);width:96px;text-align:right}
+.revcatname{cursor:pointer}.revcatname .cchev{color:var(--muted);font-size:10px}
+.revcatdetail{padding:2px 0 10px 34px;border-bottom:1px solid var(--line)}
+.cditem{display:flex;gap:8px;align-items:flex-start;padding:3px 0;font-size:12px}
+.cditem .dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex:0 0 auto}
+.cdq{color:var(--ink)}.cda{font-weight:700}
+.cdremark{font-size:11px;color:var(--muted);margin-top:2px}
+.cdflag{margin-top:5px}
+.flagbtn{color:var(--amber);font-size:11px;font-weight:600}
+.flagbox{display:flex;gap:6px;margin-top:6px;align-items:center}
+.flagbox input{flex:1;padding:6px 8px;font-size:12px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink)}
+.chgreq{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:6px;padding:7px 10px;background:var(--amberbg);border:1px solid var(--amber);border-radius:8px}
+.chgreq-h{font-weight:800;color:var(--amber);font-size:10px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+.chgreq-n{font-size:12.5px;color:var(--ink);flex:1 1 auto;min-width:120px}
+.chgreq-m{font-size:11px;color:var(--muted);white-space:nowrap}
+.chgreq-x{color:var(--red);font-size:11px}
+.catflag{font-size:11px;color:var(--amber);font-weight:700}
+.mxgate{display:flex;flex-direction:column;gap:10px;padding:6px 2px}
+.mxgate input{padding:10px 12px;font-size:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink)}
+.gateerr{color:var(--red);font-size:12px;min-height:14px}
+.revcat .csig{font-size:11px;font-weight:700;text-align:right;min-width:150px;white-space:nowrap}
+.csig.done{color:var(--green)}.csig.no{color:var(--muted)}.csig.stale{color:var(--red)}
+.revcat.catsigned{background:#f4fdf8}
+.belowgrp{margin-bottom:12px}.belowgrp:last-child{margin-bottom:0}
+.belowgh{font-size:12px;font-weight:800;color:var(--ink);margin:0 0 6px}
+.belowgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:8px}
+.belowchip{display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--redbg);border:1px solid #fecaca;border-radius:8px;padding:7px 11px;font-size:12.5px}
+.belowchip .bn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.belowchip b{color:var(--red);flex:0 0 auto}
+.cditem.has-req{background:var(--amberbg);border-radius:8px;padding:6px 8px;margin:2px 0}
 .tick{width:20px;height:20px;border:2px solid var(--line);border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;flex:none;background:var(--panel)}
 .tick.on{background:var(--green);border-color:var(--green)}
 .revfoot{padding:12px 18px;border-top:1px solid var(--line);display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--greybg)}
@@ -274,6 +303,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
     <div class="card"><div class="panel-h"><h3>Readiness by Category</h3><span class="muted" style="font-size:11.5px">completed ÷ applicable</span></div><div class="panel-b" id="catbars"></div></div>
     <div class="card"><div class="panel-h"><h3>By Cluster Manager</h3></div><div class="panel-b"><div class="region-chips" id="regionchips"></div></div></div>
   </div>
+  <div id="belowlist"></div>
   <div class="card" style="margin-top:16px">
     <div class="panel-h"><h3>Store Readiness <span class="muted" id="storecount" style="font-size:12px;font-weight:400"></span></h3><input class="search" id="storesearch" placeholder="Filter…" oninput="renderTable()"></div>
     <div class="tablewrap"><table>
@@ -329,14 +359,14 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 </section>
 
 <section id="view-summary" class="view">
-  <div class="flowbox"><b>Sign-off tracker.</b> Read-only rollup of each Cluster Manager's review outcomes across their stores — who's fully reviewed and who's behind. Sorted least-reviewed first so gaps surface at the top. Sign-off resets to "Re-review" if a store edits after being signed off.</div>
+  <div class="flowbox"><b>Sign-off tracker.</b> Read-only rollup of each Cluster Manager's review outcomes across their stores — who's fully reviewed and who's behind. Sorted least-reviewed first so gaps surface at the top. Each category is signed off individually; a category reverts to unsigned if the store edits it after.</div>
   <div class="kpis" id="sumkpis"></div>
   <div class="card">
     <div class="panel-h"><h3>Review Sign-off by Cluster Manager</h3><span class="muted" style="font-size:11.5px">least reviewed first</span></div>
     <div class="tablewrap"><table>
       <thead><tr>
         <th>Cluster Manager</th><th class="num">Stores</th><th class="num">✓ Signed Off</th>
-        <th class="num">Awaiting</th><th class="num">Re-review</th><th class="num">Not Submitted</th><th>% Reviewed</th>
+        <th class="num">Partially</th><th class="num">Awaiting</th><th class="num">Not Submitted</th><th>% Reviewed</th>
       </tr></thead><tbody id="sumtbody"></tbody>
     </table></div>
   </div>
@@ -619,14 +649,19 @@ function renderDash(){
   const ready=stats.filter(x=>x.pct>=.95).length, notStarted=stats.filter(x=>!x.filled).length;
   const atrisk=stats.filter(x=>x.filled&&x.pct<.8).length, pend=stats.reduce((a,x)=>a+x.pending,0);
   const signedOff=stats.filter(x=>reviewState(x.s)==='done').length;
+  const notSigned=stats.filter(x=>x.filled&&reviewState(x.s)!=='done').length;
   document.getElementById('kpis').innerHTML=[
     kpi('Overall Readiness',pctTxt(overall),(N-notStarted)+' of '+N+' filled',color(overall)),
     kpi('Stores Ready',ready+' / '+N,'at ≥95%',color(N?ready/N:0)),
-    kpi('Mgr Signed Off',signedOff+' / '+N,'reviewed',color(N?signedOff/N:0)),
+    kpi('Cluster Manager Sign Off',signedOff+' / '+N,notSigned+' not yet signed off',color(N?signedOff/N:0)),
     kpi('Not Started',notStarted,'never submitted',notStarted?'var(--red)':'var(--green)'),
-    kpi('At Risk',atrisk,'below 80%','var(--red)'),
-    kpi('Open Items',pend.toLocaleString(),'pending in view','var(--amber)')
+    kpi('Stores below 80%',atrisk,'at risk · listed below',atrisk?'var(--red)':'var(--green)')
   ].join('');
+  { const below=stats.filter(x=>x.filled&&x.pct<.8); const el=document.getElementById('belowlist');
+    if(!el){} else if(!below.length){ el.innerHTML=''; }
+    else { const byMgr={}; below.forEach(x=>{(byMgr[x.s.mgr]=byMgr[x.s.mgr]||[]).push(x);});
+      const groups=Object.keys(byMgr).sort().map(m=>'<div class="belowgrp"><div class="belowgh">'+m+' <span class="muted">('+byMgr[m].length+')</span></div><div class="belowgrid">'+byMgr[m].sort((a,b)=>a.pct-b.pct).map(x=>'<div class="belowchip"><span class="bn">'+x.s.name+'</span><b>'+pctTxt(x.pct)+'</b></div>').join('')+'</div></div>').join('');
+      el.innerHTML='<div class="card" style="margin-top:12px"><div class="panel-h"><h3>Stores below 80%</h3><span class="muted" style="font-size:11.5px">'+below.length+' at risk · by cluster manager</span></div><div class="panel-b">'+groups+'</div></div>'; } }
   document.getElementById('catbars').innerHTML=SCHEMA.map((c,ci)=>{
     const ps=scope.map(s=>s.data?catStat(s,ci).pct:null).filter(v=>v!=null); const p=avg(ps);
     return '<div class="catbar clickable" onclick="openCategoryMatrix('+ci+')" title="Click for store-wise detail"><div class="top"><b>'+c.n+' <span class="mxhint">›</span></b><span class="pct" style="color:'+color(p)+'">'+pctTxt(p)+'</span></div><div class="track"><div class="fill" style="width:'+(p*100)+'%;background:'+color(p)+'"></div></div></div>';
@@ -665,9 +700,9 @@ function drillHTML(idx){const s=STORES[idx];
 function toggleDrill(idx){const d=document.getElementById('drill'+idx),e=document.getElementById('exp'+idx);
   const open=d.style.display==='none';d.style.display=open?'table-row':'none';if(e)e.textContent=open?'▾':'▸';}
 function reviewBadge(idx){const s=STORES[idx],st=reviewState(s);const nf=flagCount(s);
-  const flag=nf?' <span class="badge b-red" title="open manager flags">⚑'+nf+'</span>':'';
-  if(st==='done')return '<span class="badge b-green">✓ '+s.review.by.split(' ')[0]+'</span>'+flag;
-  if(st==='stale')return '<span class="badge b-red">Re-review</span>'+flag;
+  const flag=nf?' <span class="badge b-red" title="open change requests">⚑'+nf+'</span>':'';
+  if(st==='done')return '<span class="badge b-green">✓ Fully signed</span>'+flag;
+  if(st==='partial'){const sg=signedCatCount(s),nd=applicableCatIdx(s).length;return '<span class="badge b-amber">'+sg+'/'+nd+' signed</span>'+flag;}
   return '<span class="badge b-amber">Awaiting</span>'+flag;}
 
 /* ===================== STORE ENTRY (typed + auto-remarks) ===================== */
@@ -855,9 +890,9 @@ function sendFlag(idx,fid){ const inp=document.getElementById('fi_'+idx+'_'+fid)
 function clearFlag(idx,fid){ const s=STORES[idx]; if(s.flags) delete s.flags[fid]; apiUnflag(s,fid); renderReview(); renderDash(); }
 function flagCount(s){ return s.flags?Object.keys(s.flags).length:0; }
 function flagItemHTML(idx,it){ const s=STORES[idx]; const fl=s.flags&&s.flags[it.id];
-  if(fl) return '<div class="flagged"><i>⚑</i> <b>Flagged for store:</b> '+fl.note.replace(/</g,'&lt;')+' <button class="linkbtn" onclick="clearFlag('+idx+',\''+it.id+'\')">clear</button></div>';
-  return '<button class="linkbtn flagbtn" onclick="toggleFlagBox('+idx+',\''+it.id+'\')">⚑ Flag for store</button>'+
-    '<div class="flagbox" id="fb_'+idx+'_'+it.id+'" style="display:none"><input id="fi_'+idx+'_'+it.id+'" placeholder="What must the store fix?"><button class="btn btn-primary" style="padding:5px 12px;font-size:12px" onclick="sendFlag('+idx+',\''+it.id+'\')">Send</button></div>'; }
+  if(fl) return '<div class="chgreq"><span class="chgreq-h">⚑ Change requested</span><span class="chgreq-n">“'+fl.note.replace(/</g,'&lt;')+'”</span><span class="chgreq-m">by '+(fl.by||'manager')+' · '+fmtAgo(fl.at)+'</span><button class="linkbtn chgreq-x" onclick="clearFlag('+idx+',\''+it.id+'\')">✕ withdraw</button></div>';
+  return '<button class="linkbtn flagbtn" onclick="toggleFlagBox('+idx+',\''+it.id+'\')">⚑ Request a change</button>'+
+    '<div class="flagbox" id="fb_'+idx+'_'+it.id+'" style="display:none"><input id="fi_'+idx+'_'+it.id+'" placeholder="What should the store change or fix?"><button class="btn btn-primary" style="padding:5px 12px;font-size:12px" onclick="sendFlag('+idx+',\''+it.id+'\')">Send to store</button></div>'; }
 /* ---- per-question freshness (24h threshold) ---- */
 const STALE_MS=24*3600*1000;
 function editedAnswers(s){ if(!s.data)return []; const out=[];
@@ -872,7 +907,7 @@ function showToast(msg,bg,ms){ const t=document.getElementById('toast'); t.textC
   if(ms){ clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),ms); } }
 async function saveStore(){const s=STORES[current];s.updatedAt=Date.now();s.updatedBy=s.name+" (store)";
   AUDIT.push({store:s.name,at:s.updatedAt,pct:Math.round(storeStats(s).pct*100)});
-  s.review=null;                 // a store edit invalidates any prior manager sign-off
+  /* per-category: a store edit only invalidates the categories it changed (hash mismatch), not the whole review */
   renderDash();                  // optimistic: local view updates instantly
   const hint=document.getElementById('savedhint');
   if(!apiOn()){ hint.textContent='Saved (demo mode).'; hint.style.color='var(--muted)'; showToast('Saved (demo)','var(--grey)',1800); return; }
@@ -898,35 +933,53 @@ function mxCell(s,f){
 function signoffInfo(s){
   if(!s.updatedAt) return {t:'Not started',c:'var(--grey)',bg:'var(--greybg)',tx:'var(--muted)'};
   const st=reviewState(s);
-  if(st==='done')  return {t:'✓ Signed off',c:'var(--green)',bg:'var(--greenbg)',tx:'var(--green)'};
-  if(st==='stale') return {t:'⚠ Re-review',c:'var(--red)',bg:'var(--redbg)',tx:'var(--red)'};
-  return {t:'Awaiting sign-off',c:'var(--amber)',bg:'var(--amberbg)',tx:'var(--amber)'};
+  if(st==='done')  return {t:'✓ Fully signed',c:'var(--green)',bg:'var(--greenbg)',tx:'var(--green)'};
+  if(st==='partial'){const sg=signedCatCount(s),nd=applicableCatIdx(s).length;return {t:sg+'/'+nd+' signed',c:'var(--amber)',bg:'var(--amberbg)',tx:'var(--amber)'};}
+  return {t:'Not signed',c:'var(--amber)',bg:'var(--amberbg)',tx:'var(--amber)'};
 }
+let mxMgr=null;   // who is authenticated to view the category drill-down (session-persistent)
+function showMatrixGate(ci){
+  const c=SCHEMA[ci];
+  const sheet=document.getElementById('opsheet'); sheet.style.maxWidth='460px';
+  sheet.innerHTML='<div class="ophead"><div class="t"><h2>🔒 '+c.n+'</h2><div class="meta">Enter your password to view the actual store answers. <b>Master</b> shows every store; a <b>Cluster Manager</b> code shows only your stores.</div></div><button class="opclose" onclick="closeOP()">✕</button></div>'+
+    '<div class="opbody"><div class="mxgate"><input type="password" id="mxpass" placeholder="Password" onkeydown="if(event.key===\'Enter\')unlockMatrix('+ci+')"><div id="mxgateerr" class="gateerr"></div><button class="btn btn-primary" style="width:100%" onclick="unlockMatrix('+ci+')">View answers</button></div></div>';
+  document.getElementById('overlay').classList.add('show');
+  setTimeout(function(){var el=document.getElementById('mxpass'); if(el) el.focus();},60);
+}
+function unlockMatrix(ci){
+  const p=(document.getElementById('mxpass')||{}).value||'';
+  if(p===MASTER_PASS){ mxMgr=MASTER_MGR; }
+  else { const mgr=Object.keys(PASSCODES).find(m=>PASSCODES[m]===p); if(!mgr){ const e=document.getElementById('mxgateerr'); if(e) e.textContent='Incorrect password — no data shown.'; return; } mxMgr=mgr; }
+  openCategoryMatrix(ci);
+}
+function lockMatrix(){ mxMgr=null; closeOP(); }
 function openCategoryMatrix(ci){
+  if(mxMgr===null){ showMatrixGate(ci); return; }
   const c=SCHEMA[ci], fields=c.f;
+  const stores=(mxMgr===MASTER_MGR)?STORES:STORES.filter(s=>s.mgr===mxMgr);
   const head='<th class="mxstore">Store</th><th>Cluster Manager</th><th>Cluster sign-off</th>'+fields.map(f=>'<th>'+f.q+'</th>').join('');
-  const rows=STORES.map(s=>{
+  const rows=stores.map(s=>{
     const so=signoffInfo(s);
     const cells=fields.map(f=>{const v=mxCell(s,f);return '<td style="color:'+v.c+'">'+v.t+'</td>';}).join('');
     return '<tr><td class="mxstore" style="border-left:4px solid '+so.c+'">'+s.name+'</td><td class="muted" style="font-size:11px">'+s.mgr+'</td>'+
       '<td><span class="sopill" style="background:'+so.bg+';color:'+so.tx+'">'+so.t+'</span></td>'+cells+'</tr>';
   }).join('');
+  const who=(mxMgr===MASTER_MGR?'Master · all stores':mxMgr);
   const sheet=document.getElementById('opsheet'); sheet.style.maxWidth='1150px';
-  sheet.innerHTML='<div class="ophead"><div class="t"><h2>'+c.n+' — store-wise</h2><div class="meta">Every store’s actual answer for this category. Store names stay pinned; scroll sideways for more questions.</div></div>'+
-    '<button class="btn btn-ghost" style="margin-left:auto" onclick="downloadCategoryCSV('+ci+')">⬇ CSV</button>'+
+  sheet.innerHTML='<div class="ophead"><div class="t"><h2>'+c.n+' — store-wise</h2><div class="meta">Viewing as <b>'+who+'</b> · '+stores.length+' store'+(stores.length>1?'s':'')+'. Store names pinned; scroll sideways.</div></div>'+
+    '<button class="btn btn-ghost" style="margin-left:auto" onclick="lockMatrix()">🔒 Lock / switch</button>'+
+    '<button class="btn btn-ghost" onclick="downloadCategoryCSV('+ci+')">⬇ CSV</button>'+
     '<button class="opclose" onclick="closeOP()">✕</button></div>'+
     '<div class="opbody"><div class="mxscroll"><table class="mxtbl"><thead><tr>'+head+'</tr></thead><tbody>'+rows+'</tbody></table></div></div>'+
     '<div class="opfoot"><button class="btn btn-ghost" onclick="closeOP()">Close</button></div>';
   document.getElementById('overlay').classList.add('show');
 }
 function downloadCategoryCSV(ci){
-  const p=window.prompt('Enter your password to download.\nMaster = all stores · a Cluster Manager code = only your stores:');
-  if(p===null) return;                          // cancelled
   let stores, scopeTag='';
-  if(p===MASTER_PASS){ stores=STORES; }
-  else { const mgr=Object.keys(PASSCODES).find(m=>PASSCODES[m]===p);
-    if(!mgr){ alert('Incorrect password — download blocked.'); return; }
-    stores=STORES.filter(s=>s.mgr===mgr); scopeTag='_'+mgr.replace(/[^a-z0-9]+/gi,'_'); }
+  if(mxMgr){ if(mxMgr===MASTER_MGR){ stores=STORES; } else { stores=STORES.filter(s=>s.mgr===mxMgr); scopeTag='_'+mxMgr.replace(/[^a-z0-9]+/gi,'_'); } }
+  else { const p=window.prompt('Enter your password to download.\nMaster = all stores · a Cluster Manager code = only your stores:'); if(p===null) return;
+    if(p===MASTER_PASS){ stores=STORES; }
+    else { const mgr=Object.keys(PASSCODES).find(m=>PASSCODES[m]===p); if(!mgr){ alert('Incorrect password — download blocked.'); return; } stores=STORES.filter(s=>s.mgr===mgr); scopeTag='_'+mgr.replace(/[^a-z0-9]+/gi,'_'); } }
   const c=SCHEMA[ci], fields=c.f, esc=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
   const lines=[['Store','Cluster Manager','Cluster sign-off'].concat(fields.map(f=>f.q)).map(esc).join(',')];
   stores.forEach(s=>{ const row=[s.name,s.mgr,signoffInfo(s).t].concat(fields.map(f=>{const v=mxCell(s,f);return v.t==='—'?'':v.t;})); lines.push(row.map(esc).join(',')); });
@@ -973,19 +1026,32 @@ function unlockReview(){const code=document.getElementById('pass').value.trim();
   document.getElementById('whoami').textContent=mgr;renderReview();}
 function lockReview(){currentMgr=null;document.getElementById('reviewpanel').style.display='none';document.getElementById('reviewgate').style.display='block';}
 function dataHash(s){if(!s.data)return '';return SCHEMA.flatMap(c=>c.f).map(f=>JSON.stringify(s.data[f.id])).join('|');}
-function reviewState(s){if(!s.review)return 'await';return s.review.hash===dataHash(s)?'done':'stale';}
+function catHash(s,ci){ if(!s.data) return ''; return SCHEMA[ci].f.map(f=>JSON.stringify(s.data[f.id])).join('|'); }
+function normReview(s){ if(s.review && Array.isArray(s.review.cats)){ const m={}; (s.review.cats||[]).forEach(nm=>{ const ci=SCHEMA.findIndex(c=>c.n===nm); m[nm]={by:s.review.by||'',at:s.review.at||Date.now(),hash:ci>=0?catHash(s,ci):''}; }); s.review={cats:m}; } if(s.review && !s.review.cats) s.review.cats={}; }
+function catSignEntry(s,ci){ if(!s.review||!s.review.cats) return null; return s.review.cats[SCHEMA[ci].n]||null; }
+function catSigned(s,ci){ const e=catSignEntry(s,ci); return !!(e && e.hash===catHash(s,ci)); }
+function catStale(s,ci){ const e=catSignEntry(s,ci); return !!(e && e.hash!==catHash(s,ci)); }
+function applicableCatIdx(s){ return SCHEMA.map((c,ci)=>ci).filter(ci=>s.data&&catStat(s,ci).app>0); }
+function signedCatCount(s){ return applicableCatIdx(s).filter(ci=>catSigned(s,ci)).length; }
+function latestSignAt(s){ if(!s.review||!s.review.cats) return null; const ats=Object.values(s.review.cats).map(e=>e.at).filter(Boolean); return ats.length?Math.max.apply(null,ats):null; }
+function reviewState(s){ if(!s.updatedAt) return 'await'; normReview(s); const need=applicableCatIdx(s); if(!need.length) return 'await'; const sg=need.filter(ci=>catSigned(s,ci)).length; if(sg===0) return 'await'; if(sg===need.length) return 'done'; return 'partial'; }
 function renderReview(){const master=currentMgr===MASTER_MGR;
   const mine=STORES.map((s,idx)=>({s,idx})).filter(o=>master||o.s.mgr===currentMgr);
   document.getElementById('revcount').textContent='· '+mine.length+(master?' stores (all clusters)':' stores assigned to you');
   document.getElementById('reviewcards').innerHTML=mine.map(({s,idx})=>{
-    const st=storeStats(s),state=reviewState(s),draft=(s.reviewDraft=s.reviewDraft||{});
-    const badge=!s.updatedAt?'<span class="revstatus rs-stale">Store not started</span>':state==='done'?'<span class="revstatus rs-done">✓ Signed off · '+fmtAgo(s.review.at)+'</span>':state==='stale'?'<span class="revstatus rs-stale">Store changed — re-review</span>':'<span class="revstatus rs-await">Awaiting your review</span>';
+    const st=storeStats(s); normReview(s);
+    const need=applicableCatIdx(s); const sg=signedCatCount(s);
+    const state=!s.updatedAt?'ns':(need.length&&sg===need.length?'done':(sg>0?'partial':'await'));
+    const badge=!s.updatedAt?'<span class="revstatus rs-stale">Store not started</span>':state==='done'?'<span class="revstatus rs-done">✓ Fully signed off · '+fmtAgo(latestSignAt(s))+'</span>':state==='partial'?'<span class="revstatus rs-await">'+sg+' / '+need.length+' categories signed</span>':'<span class="revstatus rs-await">Awaiting your review</span>';
     const cats=SCHEMA.map((c,ci)=>{const cs=s.data?catStat(s,ci):{pct:null,done:0,app:0};
-      const checked=state==='done'?s.review.cats.includes(c.n):!!draft[c.n];
-      return '<div class="revcat"><div class="tick '+(checked?'on':'')+'" onclick="toggleReviewCat('+idx+',\''+c.n.replace(/'/g,"\\'")+'\')">'+(checked?'✓':'')+'</div><span class="cn">'+c.n+'</span><span class="cst">'+cs.done+'/'+cs.app+' done</span><span class="cpc" style="color:'+color(cs.pct||0)+'">'+(cs.pct==null?'—':pctTxt(cs.pct))+'</span></div>';}).join('');
-    const confirmed=state==='done'?s.review.cats.length:Object.values(draft).filter(Boolean).length;
-    const foot=state==='done'?'<span class="signed">Signed off by '+s.review.by+' · '+fmtAgo(s.review.at)+(s.review.note?(' · “'+s.review.note+'”'):'')+'</span><button class="btn btn-ghost" style="margin-left:auto" onclick="unsign('+idx+')">Undo sign-off</button>':
-      '<span class="prog">'+confirmed+' / '+SCHEMA.length+' categories confirmed</span><input class="revnote" id="note'+idx+'" placeholder="Optional note"><button class="btn btn-primary" onclick="signOff('+idx+')" '+(s.updatedAt?'':'disabled')+'>Confirm &amp; sign off</button>';
+      const signed=catSigned(s,ci); const staleC=catStale(s,ci); const e=catSignEntry(s,ci);
+      const openK=idx+'_'+ci; const isOpen=!!catOpen[openK];
+      const sigCls=signed?'done':(staleC?'stale':'no');
+      const sigTxt=signed?('✓ Signed off · '+((e&&e.by)?String(e.by).split(' ')[0]:'')+' · '+fmtAgo(e&&e.at)):(staleC?'⚠ Store changed — re-sign':'Not signed off');
+      const flagN=c.f.filter(f=>s.flags&&s.flags[f.id]).length;
+      return '<div class="revcat'+(signed?' catsigned':'')+'"><div class="tick '+(signed?'on':'')+'" onclick="signCat('+idx+','+ci+')" title="Sign off / undo this category">'+(signed?'✓':'')+'</div><span class="cn revcatname" onclick="toggleCatDetail('+idx+','+ci+')"><span class="cchev" id="cchev'+openK+'">'+(isOpen?'▾':'▸')+'</span> '+c.n+(flagN?' <span class="catflag">⚑ '+flagN+' change'+(flagN>1?'s':'')+' requested</span>':'')+'</span><span class="csig '+sigCls+'">'+sigTxt+'</span><span class="cpc" style="color:'+color(cs.pct||0)+'">'+(cs.pct==null?'—':pctTxt(cs.pct))+'</span></div><div class="revcatdetail" id="cdet'+openK+'" style="display:'+(isOpen?'block':'none')+'">'+(s.data?catDetailHTML(s,ci,idx):'<div class="muted" style="font-size:12px;padding:4px 0">Store has not submitted yet.</div>')+'</div>';}).join('');
+    const viewBtn='<button class="btn btn-ghost" onclick="openOP('+idx+')">🔍 View full checklist</button>';
+    const foot=!s.updatedAt?viewBtn+'<span class="prog">Store has not submitted yet.</span>':viewBtn+'<span class="prog" style="'+(state==='done'?'color:var(--green);font-weight:700':'color:var(--amber);font-weight:600')+'">'+(state==='done'?('✓ Fully signed off — all '+need.length+' categories'):(sg+' / '+need.length+' categories signed off'))+'</span><span class="muted" style="margin-left:auto;font-size:12px">Tap a category\'s box to sign it off; tap again to undo.</span>';
     const pend=s.updatedAt?pendingByCat(s):[];
     const pendCount=pend.reduce((a,p)=>a+p.items.length,0);
     let pendBlock;
@@ -993,24 +1059,28 @@ function renderReview(){const master=currentMgr===MASTER_MGR;
     else if(!pendCount) pendBlock='<div class="revpend"><div style="font-size:12px;color:var(--green);font-weight:600">✓ Nothing pending — all applicable items complete.</div></div>';
     else pendBlock='<div class="revpend"><button class="revtoggle" onclick="togglePend('+idx+')"><span id="rpc'+idx+'">▸</span> What\'s pending to review ('+pendCount+' item'+(pendCount>1?'s':'')+')</button>'+
       '<div id="rpend'+idx+'" style="display:none;margin-top:8px"><div class="dcats">'+pend.map(p=>'<div class="dcat"><div class="dch">'+p.cat+' <span class="muted">('+p.items.length+')</span></div>'+p.items.map(it=>'<div class="ditem"><span class="dot" style="background:var(--amber)"></span><div style="flex:1">'+it.q+' <span class="dstat">'+it.label+'</span>'+(it.remark?'<div class="muted" style="font-size:11px">📝 '+it.remark+'</div>':'')+flagItemHTML(idx,it)+'</div></div>').join('')+'</div>').join('')+'</div></div></div>';
-    // per-question freshness (24h)
     const ed=editedAnswers(s); const stale=ed.filter(x=>Date.now()-x.ts>STALE_MS);
     let freshBlock='';
     if(s.updatedAt){
       if(!ed.length) freshBlock='<div class="revfresh"><span class="muted">No individual answers recorded yet.</span></div>';
       else if(!stale.length){ const oldest=Math.min.apply(null,ed.map(x=>x.ts));
         freshBlock='<div class="revfresh ok">✓ All '+ed.length+' answers refreshed within 24h (oldest '+fmtAgo(oldest)+')</div>'; }
-      else freshBlock='<div class="revfresh warn"><button class="revtoggle" style="color:var(--red)" onclick="toggleStale('+idx+')"><span id="stc'+idx+'">▸</span> ⚠ '+stale.length+' answer'+(stale.length>1?'s':'')+' not updated in 24h+ — re-confirm before sign-off</button>'+
+      else freshBlock='<div class="revfresh warn"><button class="revtoggle" style="color:var(--red)" onclick="toggleStale('+idx+')"><span id="stc'+idx+'">▸</span> ⚠ '+stale.length+' answer'+(stale.length>1?'s':'')+' not updated in 24h+ — re-check before signing</button>'+
         '<div id="stale'+idx+'" style="display:none;margin-top:8px">'+stale.sort((a,b)=>a.ts-b.ts).map(x=>'<div class="ditem"><span class="dot" style="background:var(--red)"></span><div>'+x.f.q+' <span class="dstat">'+x.label+'</span> <span class="muted" style="font-size:11px">· edited '+fmtAgo(x.ts)+'</span></div></div>').join('')+'</div></div>';
     }
     return '<div class="revcard card"><div class="revhead"><span class="rn">'+s.name+'</span><span class="rp" style="color:'+color(st.pct)+'">'+(st.filled?pctTxt(st.pct)+' ready':'not started')+'</span>'+badge+'</div><div class="revbody">'+cats+pendBlock+freshBlock+'</div><div class="revfoot">'+foot+'</div></div>';
   }).join('');}
+
 function togglePend(idx){const d=document.getElementById('rpend'+idx),e=document.getElementById('rpc'+idx);if(!d)return;const o=d.style.display==='none';d.style.display=o?'block':'none';if(e)e.textContent=o?'▾':'▸';}
 function toggleStale(idx){const d=document.getElementById('stale'+idx),e=document.getElementById('stc'+idx);if(!d)return;const o=d.style.display==='none';d.style.display=o?'block':'none';if(e)e.textContent=o?'▾':'▸';}
-function toggleReviewCat(idx,cat){const s=STORES[idx];if(reviewState(s)==='done')return;s.reviewDraft=s.reviewDraft||{};s.reviewDraft[cat]=!s.reviewDraft[cat];renderReview();}
-function signOff(idx){const s=STORES[idx];if(!s.updatedAt)return;const draft=s.reviewDraft||{};const cats=SCHEMA.map(c=>c.n).filter(n=>draft[n]);
-  const note=(document.getElementById('note'+idx)||{}).value||'';s.review={by:currentMgr,at:Date.now(),cats,note,hash:dataHash(s)};apiSaveReview(s);renderReview();renderDash();}
-function unsign(idx){STORES[idx].review=null;apiSaveReview(STORES[idx]);renderReview();renderDash();}
+function signCat(idx,ci){ const s=STORES[idx]; if(!s.updatedAt) return; normReview(s); s.review=s.review||{cats:{}}; s.review.cats=s.review.cats||{}; const nm=SCHEMA[ci].n;
+  if(catSigned(s,ci)){ delete s.review.cats[nm]; } else { s.review.cats[nm]={by:currentMgr,at:Date.now(),hash:catHash(s,ci)}; }
+  if(!Object.keys(s.review.cats).length) s.review=null;
+  apiSaveReview(s); renderReview(); renderDash(); }
+let catOpen={};
+function toggleCatDetail(idx,ci){const k=idx+'_'+ci;catOpen[k]=!catOpen[k];const el=document.getElementById('cdet'+k),ch=document.getElementById('cchev'+k);if(el)el.style.display=catOpen[k]?'block':'none';if(ch)ch.textContent=catOpen[k]?'▾':'▸';}
+function catDetailHTML(s,ci,idx){return SCHEMA[ci].f.map(function(f){const hidden=gateNA(s,f)||showIfNA(s,f);const r=fieldStat(s,f);const v=s.data?s.data[f.id]:null;const dot=hidden?'var(--grey)':(r.done?'var(--green)':(r.app?'var(--amber)':'var(--grey)'));const ans=hidden?'N/A':(r.label||'—');const remark=(v&&v.remark)?'<div class="cdremark">\uD83D\uDCDD '+v.remark+'</div>':'';const flag=hidden?'':'<div class="cdflag">'+flagItemHTML(idx,{id:f.id,q:f.q,label:ans,remark:(v&&v.remark)})+'</div>';return '<div class="cditem'+((s.flags&&s.flags[f.id])?' has-req':'')+'"><span class="dot" style="background:'+dot+'"></span><div style="flex:1"><span class="cdq">'+f.q+'</span> <span class="cda">'+ans+'</span>'+remark+flag+'</div></div>';}).join('');}
+/* signOff replaced by per-category signCat (above) */
 
 /* ===================== Google Sheet sync (no-op in local mode) ===================== */
 function apiOn(){ return !!CONFIG.API_URL; }
@@ -1021,7 +1091,7 @@ async function apiLoad(){
     const rows=await res.json();
     const byName={}; rows.forEach(r=>byName[r.store]=r);
     STORES.forEach(s=>{ const r=byName[s.name]; if(r){
-      s.data=r.data||null; s.updatedAt=r.updatedAt||null; s.updatedBy=r.updatedBy||null; s.review=r.review||null; s.flags=r.flags||{};
+      s.data=r.data||null; s.updatedAt=r.updatedAt||null; s.updatedBy=r.updatedBy||null; s.review=r.review||null; s.flags=r.flags||{}; normReview(s);
     }});
     return true;
   }catch(err){ console.warn('Sheet load failed:',err); return false; }
@@ -1077,31 +1147,31 @@ setInterval(()=>{ if(!apiOn()||syncing) return;
 /* ===================== REVIEW SUMMARY (per-manager sign-off rollup) ===================== */
 function renderSummary(){
   const mgrs=[...new Set(STORES.map(s=>s.mgr))].sort();
-  let T={total:0,done:0,await:0,stale:0,ns:0};
+  let T={total:0,done:0,part:0,await:0,ns:0};
   const rows=mgrs.map(m=>{
     const list=STORES.filter(s=>s.mgr===m);
-    let done=0,aw=0,stale=0,ns=0;
+    let done=0,part=0,aw=0,ns=0;
     list.forEach(s=>{ if(!s.updatedAt){ns++;return;} const st=reviewState(s);
-      if(st==='done')done++; else if(st==='stale')stale++; else aw++; });
-    T.total+=list.length;T.done+=done;T.await+=aw;T.stale+=stale;T.ns+=ns;
-    return {m,total:list.length,done,aw,stale,ns,pct:list.length?done/list.length:0};
+      if(st==='done')done++; else if(st==='partial')part++; else aw++; });
+    T.total+=list.length;T.done+=done;T.part+=part;T.await+=aw;T.ns+=ns;
+    return {m,total:list.length,done,part,aw,ns,pct:list.length?done/list.length:0};
   }).sort((a,b)=>a.pct-b.pct);   // least reviewed first
   document.getElementById('sumkpis').innerHTML=[
-    kpi('Signed Off',T.done+' / '+T.total,'stores reviewed & confirmed',color(T.total?T.done/T.total:0)),
-    kpi('Awaiting Review',T.await,'submitted, not signed off',T.await?'var(--amber)':'var(--green)'),
-    kpi('Re-review',T.stale,'changed after sign-off',T.stale?'var(--red)':'var(--green)'),
+    kpi('Fully Signed Off',T.done+' / '+T.total,'all categories signed',color(T.total?T.done/T.total:0)),
+    kpi('Partially Signed',T.part,'some categories signed',T.part?'var(--amber)':'var(--green)'),
+    kpi('Awaiting Review',T.await,'submitted, none signed',T.await?'var(--amber)':'var(--green)'),
     kpi('Not Submitted',T.ns,'store hasn’t filled yet',T.ns?'var(--red)':'var(--green)')
   ].join('');
   const rowHTML=r=>{const c=color(r.pct);
     return '<td>'+r.m+'</td><td class="num">'+r.total+'</td>'+
       '<td class="num" style="color:var(--green);font-weight:700">'+r.done+'</td>'+
+      '<td class="num" style="color:'+(r.part?'var(--amber)':'var(--muted)')+'">'+r.part+'</td>'+
       '<td class="num" style="color:'+(r.aw?'var(--amber)':'var(--muted)')+'">'+r.aw+'</td>'+
-      '<td class="num" style="color:'+(r.stale?'var(--red)':'var(--muted)')+';font-weight:'+(r.stale?700:400)+'">'+r.stale+'</td>'+
       '<td class="num" style="color:'+(r.ns?'var(--red)':'var(--muted)')+'">'+r.ns+'</td>'+
       '<td><span class="minibar"><i style="width:'+(r.pct*100)+'%;background:'+c+'"></i></span><b class="pct" style="color:'+c+'">'+pctTxt(r.pct)+'</b></td>';};
   const body=rows.map(r=>'<tr>'+rowHTML(r)+'</tr>').join('');
   const totPct=T.total?T.done/T.total:0;
-  const totRow='<tr style="border-top:2px solid var(--line);font-weight:700"><td>ALL ('+mgrs.length+' managers)</td><td class="num">'+T.total+'</td><td class="num" style="color:var(--green)">'+T.done+'</td><td class="num">'+T.await+'</td><td class="num">'+T.stale+'</td><td class="num">'+T.ns+'</td><td><span class="minibar"><i style="width:'+(totPct*100)+'%;background:'+color(totPct)+'"></i></span><b class="pct" style="color:'+color(totPct)+'">'+pctTxt(totPct)+'</b></td></tr>';
+  const totRow='<tr style="border-top:2px solid var(--line);font-weight:700"><td>ALL ('+mgrs.length+' managers)</td><td class="num">'+T.total+'</td><td class="num" style="color:var(--green)">'+T.done+'</td><td class="num">'+T.part+'</td><td class="num">'+T.await+'</td><td class="num">'+T.ns+'</td><td><span class="minibar"><i style="width:'+(totPct*100)+'%;background:'+color(totPct)+'"></i></span><b class="pct" style="color:'+color(totPct)+'">'+pctTxt(totPct)+'</b></td></tr>';
   document.getElementById('sumtbody').innerHTML=body+totRow;
 }
 
