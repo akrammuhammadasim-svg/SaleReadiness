@@ -937,6 +937,15 @@ function signoffInfo(s){
   if(st==='partial'){const sg=signedCatCount(s),nd=applicableCatIdx(s).length;return {t:sg+'/'+nd+' signed',c:'var(--amber)',bg:'var(--amberbg)',tx:'var(--amber)'};}
   return {t:'Not signed',c:'var(--amber)',bg:'var(--amberbg)',tx:'var(--amber)'};
 }
+/* sign-off status of ONE category for one store — used in the category drill matrix + CSV */
+function catSignoffInfo(s,ci){
+  if(!s.updatedAt) return {t:'Not started',c:'var(--grey)',bg:'var(--greybg)',tx:'var(--muted)'};
+  normReview(s);
+  if(catSigned(s,ci)){ const e=catSignEntry(s,ci);
+    return {t:'✓ Signed off'+((e&&e.by)?' · '+String(e.by).split(' ')[0]:''),c:'var(--green)',bg:'var(--greenbg)',tx:'var(--green)'}; }
+  if(catStale(s,ci)) return {t:'⚠ Changed — re-sign',c:'var(--amber)',bg:'var(--amberbg)',tx:'var(--amber)'};
+  return {t:'Not signed',c:'var(--amber)',bg:'var(--amberbg)',tx:'var(--amber)'};
+}
 let mxMgr=null;   // who is authenticated to view the category drill-down (session-persistent)
 function showMatrixGate(ci){
   const c=SCHEMA[ci];
@@ -959,7 +968,7 @@ function openCategoryMatrix(ci){
   const stores=(mxMgr===MASTER_MGR)?STORES:STORES.filter(s=>s.mgr===mxMgr);
   const head='<th class="mxstore">Store</th><th>Cluster Manager</th><th>Cluster sign-off</th>'+fields.map(f=>'<th>'+f.q+'</th>').join('');
   const rows=stores.map(s=>{
-    const so=signoffInfo(s);
+    const so=catSignoffInfo(s,ci);
     const cells=fields.map(f=>{const v=mxCell(s,f);return '<td style="color:'+v.c+'">'+v.t+'</td>';}).join('');
     return '<tr><td class="mxstore" style="border-left:4px solid '+so.c+'">'+s.name+'</td><td class="muted" style="font-size:11px">'+s.mgr+'</td>'+
       '<td><span class="sopill" style="background:'+so.bg+';color:'+so.tx+'">'+so.t+'</span></td>'+cells+'</tr>';
@@ -982,7 +991,7 @@ function downloadCategoryCSV(ci){
     else { const mgr=Object.keys(PASSCODES).find(m=>PASSCODES[m]===p); if(!mgr){ alert('Incorrect password — download blocked.'); return; } stores=STORES.filter(s=>s.mgr===mgr); scopeTag='_'+mgr.replace(/[^a-z0-9]+/gi,'_'); } }
   const c=SCHEMA[ci], fields=c.f, esc=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
   const lines=[['Store','Cluster Manager','Cluster sign-off'].concat(fields.map(f=>f.q)).map(esc).join(',')];
-  stores.forEach(s=>{ const row=[s.name,s.mgr,signoffInfo(s).t].concat(fields.map(f=>{const v=mxCell(s,f);return v.t==='—'?'':v.t;})); lines.push(row.map(esc).join(',')); });
+  stores.forEach(s=>{ const row=[s.name,s.mgr,catSignoffInfo(s,ci).t].concat(fields.map(f=>{const v=mxCell(s,f);return v.t==='—'?'':v.t;})); lines.push(row.map(esc).join(',')); });
   try{ const blob=new Blob([lines.join('\n')],{type:'text/csv;charset=utf-8'}); const url=URL.createObjectURL(blob);
     const a=document.createElement('a'); a.href=url; a.download=c.n.replace(/[^a-z0-9]+/gi,'_')+scopeTag+'_store_wise.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
   }catch(e){ console.warn('CSV download failed',e); }
