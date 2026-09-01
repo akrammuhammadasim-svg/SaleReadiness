@@ -666,9 +666,22 @@ function renderDash(){
     const ps=scope.map(s=>s.data?catStat(s,ci).pct:null).filter(v=>v!=null); const p=avg(ps);
     return '<div class="catbar clickable" onclick="openCategoryMatrix('+ci+')" title="Click for store-wise detail"><div class="top"><b>'+c.n+' <span class="mxhint">›</span></b><span class="pct" style="color:'+color(p)+'">'+pctTxt(p)+'</span></div><div class="track"><div class="fill" style="width:'+(p*100)+'%;background:'+color(p)+'"></div></div></div>';
   }).join('');
-  const regs={}; stats.forEach(x=>{(regs[x.s.mgr]=regs[x.s.mgr]||[]).push(x.pct);});
-  document.getElementById('regionchips').innerHTML=Object.keys(regs).sort().map(r=>{const p=avg(regs[r]);
-    return '<div class="rchip"><div class="rn">'+r+' · '+regs[r].length+' stores</div><div class="rv" style="color:'+color(p)+'">'+pctTxt(p)+'</div><div class="track" style="margin-top:6px"><div class="fill" style="width:'+(p*100)+'%;background:'+color(p)+'"></div></div></div>';
+  const regs={}; stats.forEach(x=>{(regs[x.s.mgr]=regs[x.s.mgr]||[]).push(x);});
+  document.getElementById('regionchips').innerHTML=Object.keys(regs).sort().map(r=>{
+    const list=regs[r]; const p=avg(list.map(x=>x.pct));
+    /* SIGN-OFF COMPLETION = modules signed ÷ modules required, across the manager's stores.
+       A submitted store requires its applicable categories; an unsubmitted store still
+       requires the full schema — so e.g. 6 of 12 signed on one store = 50% for that store. */
+    let sgMods=0, reqMods=0;
+    list.forEach(x=>{ const s=x.s; normReview(s);
+      const need=s.data?applicableCatIdx(s).length:SCHEMA.length;
+      reqMods+=need; sgMods+=(s.data?signedCatCount(s):0); });
+    const sr=reqMods?sgMods/reqMods:0, sc=color(sr);
+    return '<div class="rchip"><div class="rn">'+r+' · '+list.length+' stores</div>'
+      +'<div style="margin-top:5px;display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:11px;color:#5f636b;font-weight:600">✒ Sign-off completion</span><b style="font-size:14px;color:'+sc+'">'+sgMods+' / '+reqMods+' · '+Math.round(sr*100)+'%</b></div>'
+      +'<div class="track" style="margin-top:4px"><div class="fill" style="width:'+(sr*100)+'%;background:'+sc+'"></div></div>'
+      +'<div style="margin-top:8px;display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:11px;color:#5f636b;font-weight:600">Readiness</span><b class="rv" style="font-size:14px;color:'+color(p)+'">'+pctTxt(p)+'</b></div>'
+      +'<div class="track" style="margin-top:4px"><div class="fill" style="width:'+(p*100)+'%;background:'+color(p)+'"></div></div></div>';
   }).join('');
   renderTable();
 }
